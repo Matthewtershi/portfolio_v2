@@ -3,6 +3,7 @@
 import type React from "react"
 import { ArrowLeft, Send } from "lucide-react"
 import { useState } from "react"
+import GitHubStats from "./github-stats"
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -51,8 +52,10 @@ export default function ContactSection() {
 
   return (
     <div className="h-full bg-[var(--portfolio-dark)] text-white flex items-center justify-center relative overflow-hidden px-4">
-      {/* Contact Form - Centered */}
-      <div className="w-full max-w-2xl mx-auto text-center relative z-10">
+      {/* Two Column Layout */}
+      <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-12 relative z-10">
+        {/* Contact Form - Left Side */}
+        <div className="flex-1 max-w-lg text-center lg:text-left">
         <p className="text-amber-400 text-sm font-bold tracking-[0.2em] uppercase mb-6 relative inline-block">
           GET IN TOUCH
           <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-amber-400" />
@@ -62,7 +65,7 @@ export default function ContactSection() {
           CONTACT<span className="text-amber-400">.</span>
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-10 max-w-lg mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-10">
           <div className="relative">
             <input
               type="text"
@@ -122,13 +125,19 @@ export default function ContactSection() {
 
           <button
             type="submit"
-            className="bg-gradient-to-r from-amber-400 to-amber-500 text-black px-10 py-4 rounded-lg font-bold hover:from-amber-300 hover:to-amber-400 transition-all duration-300 flex items-center space-x-3 hover:scale-105 hover:shadow-lg group mx-auto"
+            className="bg-gradient-to-r from-amber-400 to-amber-500 text-black px-10 py-4 rounded-lg font-bold hover:from-amber-300 hover:to-amber-400 transition-all duration-300 flex items-center space-x-3 hover:scale-105 hover:shadow-lg group mx-auto lg:mx-0"
           >
             <span>Send Message</span>
             <Send size={18} className="group-hover:translate-x-1 transition-transform duration-300" />
           </button>
         </form>
       </div>
+
+      {/* GitHub Stats - Right Side */}
+      <div className="flex-1 flex justify-center lg:justify-end">
+        <GitHubStats />
+      </div>
+    </div>
 
       {/* Back to Start Button */}
       <button

@@ -24,7 +24,7 @@ const experiences: Experience[] = [
     year: "2025",
     category: "Internship",
     title: "Energy System Laboratory",
-    description: "Designed preprocessing pipelines for ML models in HVAC fault detection",
+    description: "Designed preprocessing pipelines for ML and OCR models in HVAC fault detection",
     tools: ["ASP.NET", "Azure Machine Learning", "AWS", "Blazor"],
     icon: Brain,
     position: "top",
@@ -34,7 +34,7 @@ const experiences: Experience[] = [
     category: "Research",
     title: "Climate Hydrology Lab",
     description: "Designed models and dashboards for CDR and ocean alkalinization at scale",
-    tools: ["Next.js", "Django", "PostgreSQL", "Docker"],
+    tools: ["Juypter", "Django", "PostgreSQL", "Docker"],
     icon: Leaf,
     position: "bottom",
   },
@@ -42,7 +42,7 @@ const experiences: Experience[] = [
     year: "2024",
     category: "Leadership",
     title: "Tidal TAMU Activities Director",
-    description: "Led the organization through hackathons, workshops, and lectures for 400+ students in collaboration with AWS, Google, and Microsoft",
+    description: "Led the organization through hackathons and workshops for 400+ students in collaboration with AWS, Jane Street, and many others",
     tools: ["TypeScript", "MongoDB", "Node.js"],
     icon: Code,
     position: "top",
@@ -232,7 +232,7 @@ export default function JourneySection() {
                     {/* Enhanced Experience Card with GSAP hover */}
                     <div
                       className={`timeline-card w-80 bg-white rounded-xl shadow-xl p-6 border border-amber-100 transition-all duration-300 cursor-pointer ${
-                        exp.position === "top" ? "mb-40 transform -translate-y-8" : "mt-40 transform translate-y-8"
+                        exp.position === "top" ? "mb-40 transform -translate-y-8" : "mt-32 transform translate-y-8"
                       }`}
                       onMouseEnter={(e) => {
                         gsap.to(e.currentTarget, {

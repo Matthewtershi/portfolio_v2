@@ -3,7 +3,9 @@
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
-import { Code2, Heart, BookOpen, Coffee, MapPin, Lightbulb, Camera, Gamepad2, X, Music, Globe, Zap, Palette, Mountain } from "lucide-react"
+import { Code2, Heart, BookOpen, Coffee, MapPin, Lightbulb, Camera, Gamepad2, X, Music, Globe, Zap, Palette, Mountain, Trophy } from "lucide-react"
+
+
 
 // Card component interface
 interface CardProps {
@@ -26,6 +28,104 @@ interface CardProps {
   onCloseExpanded: (e: React.MouseEvent) => void
 }
 
+// Simple Audio Player Component
+const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [audio] = useState(new Audio('/audio/calling-after-me.mp3')) // Local MP3 file
+
+  useEffect(() => {
+    audio.addEventListener('ended', () => setIsPlaying(false))
+    audio.addEventListener('loadedmetadata', () => setDuration(audio.duration))
+    audio.addEventListener('timeupdate', () => setCurrentTime(audio.currentTime))
+    
+    return () => {
+      audio.removeEventListener('ended', () => setIsPlaying(false))
+      audio.removeEventListener('loadedmetadata', () => setDuration(audio.duration))
+      audio.removeEventListener('timeupdate', () => setCurrentTime(audio.currentTime))
+      // Clean up audio when component unmounts
+      if (isPlaying) {
+        audio.pause()
+        audio.currentTime = 0
+      }
+    }
+  }, [audio, isPlaying])
+
+  // Pause and reset audio when card loses focus or is closed
+  useEffect(() => {
+    if (!isExpanded) {
+      if (isPlaying) {
+        audio.pause()
+        audio.currentTime = 0
+        setIsPlaying(false)
+      }
+    }
+  }, [isExpanded, audio, isPlaying])
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      audio.pause()
+      setIsPlaying(false)
+    } else {
+      // Only play if the card is expanded
+      if (isExpanded) {
+        audio.play()
+        setIsPlaying(true)
+      }
+    }
+  }
+
+
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.floor(time % 60)
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  return (
+    <div className="mt-3">
+      <div className="flex items-center gap-3 mb-2">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            togglePlay()
+          }}
+          className="flex items-center justify-center w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full text-white transition-colors shadow-md"
+        >
+          {isPlaying ? (
+            <div className="w-5 h-5 flex items-center justify-center">
+              <div className="w-1 h-5 bg-white rounded-sm mx-0.5"></div>
+              <div className="w-1 h-5 bg-white rounded-sm mx-0.5"></div>
+            </div>
+          ) : (
+            <div className="w-0 h-0 border-l-[10px] border-l-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1"></div>
+          )}
+        </button>
+        
+        <div className="text-sm text-gray-600">
+          {isPlaying ? 'Playing...' : 'Click to play'}
+        </div>
+      </div>
+      
+      {/* Timer Display */}
+      <div className="flex justify-between text-xs text-gray-500">
+        <span>{formatTime(currentTime)}</span>
+        <span>{formatTime(duration)}</span>
+      </div>
+      
+      {/* Progress Bar */}
+      <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
+        <div 
+          className="bg-green-500 h-1 rounded-full transition-all duration-100"
+          style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 // Reusable Card Component
 const InfoCard: React.FC<CardProps> = ({
   id,
@@ -46,7 +146,7 @@ const InfoCard: React.FC<CardProps> = ({
   
   return (
     <div
-      className={`flow-element absolute cursor-pointer transition-all duration-300 ${width} ${position.top} ${position.left || ''} ${position.right || ''}`}
+      className={`flow-element absolute cursor-pointer transition-all duration-300 ${width} ${position.top} ${position.left || ''} ${position.right || ''} ${isExpanded ? 'expanded' : ''}`}
       onClick={() => onElementClick(id)}
     >
       <div className={`${bgColor} backdrop-blur-sm rounded-2xl p-6 shadow-lg ${borderColor ? `border ${borderColor}` : ''} ${transform} hover:shadow-xl transition-shadow`}>
@@ -144,29 +244,42 @@ export default function AboutSection() {
       ref={sectionRef}
       className="relative h-full bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 overflow-hidden"
     >
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-amber-400 rounded-full blur-3xl" />
-        <div className="absolute top-40 right-32 w-24 h-24 bg-orange-400 rounded-full blur-2xl" />
-        <div className="absolute bottom-32 left-1/3 w-40 h-40 bg-yellow-400 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 right-20 w-16 h-16 bg-amber-500 rotate-45 blur-xl" />
-        <div className="absolute bottom-20 right-1/4 w-20 h-20 bg-orange-300 rounded-full blur-2xl" />
-        <div className="absolute top-1/3 left-1/2 w-28 h-28 bg-yellow-300 rounded-full blur-2xl" />
+      <div className="absolute inset-0 opacity-50">
+        {/* LEFT SIDE - MOST DENSE (reduced from 20 to 8 shapes) */}
+        <div className="absolute top-20 left-20 w-32 h-32 bg-amber-400 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-40 left-32 w-24 h-24 bg-orange-400 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-32 left-1/3 w-40 h-40 bg-yellow-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-20 w-16 h-16 bg-amber-500 rotate-45 blur-xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-1/3 left-1/2 w-28 h-28 bg-yellow-300 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.8s' }} />
+        <div className="absolute top-1/6 left-1/8 w-36 h-36 bg-amber-200 rounded-full blur-2xl opacity-70 animate-pulse" style={{ animationDelay: '0.4s' }} />
+        <div className="absolute bottom-1/6 left-1/8 w-32 h-32 bg-orange-200 rounded-full blur-2xl opacity-80 animate-pulse" style={{ animationDelay: '1.8s' }} />
+        <div className="absolute top-1/2 left-1/8 w-20 h-20 bg-yellow-200 rounded-full blur-xl opacity-75 animate-pulse" style={{ animationDelay: '0.2s' }} />
+        
+        {/* CENTER-LEFT - MEDIUM DENSITY (reduced from 3 to 2 shapes) */}
+        <div className="absolute top-1/4 left-2/3 w-18 h-18 bg-amber-400 rounded-full blur-lg animate-pulse" style={{ animationDelay: '0.1s' }} />
+        <div className="absolute bottom-1/3 left-3/4 w-14 h-14 bg-orange-300 rounded-full blur-xl animate-pulse" style={{ animationDelay: '0.8s' }} />
+        
+        {/* CENTER - LOW DENSITY (reduced from 2 to 1 shape) */}
+        <div className="absolute top-1/2 left-4/5 w-10 h-10 bg-amber-300 rounded-full blur-lg animate-pulse" style={{ animationDelay: '0.6s' }} />
+        
+        {/* RIGHT SIDE - VERY LOW DENSITY (kept at 1 shape) */}
+        <div className="absolute top-1/3 left-6/7 w-6 h-6 bg-yellow-300 rounded-full blur-sm animate-pulse" style={{ animationDelay: '0.9s' }} />
       </div>
 
-      <div className="relative z-10 h-full flex flex-col px-16">
+      <div className="relative z-10 h-full flex flex-col px-8">
         {/* Header Section - Matching Journey page format */}
         <div className="about-header py-12">
           <div className="journey-header">
             <h2 className="text-4xl lg:text-5xl font-serif font-bold text-[var(--portfolio-brown)] mb-4">About Me</h2>
             <p className="text-lg text-gray-600 font-medium">
-              Beyond coding, I'm passionate about basketball, drawing, and the outdoors. Here's a little more about me!
+              Beyond coding, I'm passionate about basketball, drawing, and the outdoors. Here's a little more about me inluding my tastes, interests, and skills!
             </p>
           </div>
         </div>
 
         <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-x-auto overflow-y-hidden scroll-smooth pb-8">
-            <div className="relative h-full" style={{ width: "90vw" }}>
+          <div className="h-full overflow-hidden pb-8">
+            <div className="relative h-full max-w-[1400px] mx-auto">
               
               {/* LEFT SIDE - Personal & Interests Cluster */}
               
@@ -176,31 +289,64 @@ export default function AboutSection() {
                 title="Who I Am"
                 icon={Heart}
                 iconColor="text-red-500"
-                bgColor="bg-white/80"
-                borderColor="border-amber-200/30"
+                bgColor="bg-white/90"
+                borderColor="border-amber-200/40"
                 transform="-rotate-1"
-                position={{ top: "top-4", left: "left-0" }}
+                position={{ top: "top-8", left: "left-4" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  I'm a passionate software engineer who believes in creating sustainable, impactful solutions.
+                  I'm a student pursuing a career in software engineering
                 </p>
                 {expandedElement === "intro" && (
                   <div className="mt-4 pt-4 border-t border-amber-200">
                     <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                      Currently pursuing my degree while working on projects that combine technical excellence with
-                      environmental consciousness. I believe the best code is not just efficient, but also serves a
-                      greater purpose.
+                      I'm passionate about turning ideas into solutions that people can utilize to improve theirs or others lives.
                     </p>
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-amber-800 text-sm mt-4">
                   <MapPin className="w-4 h-4" />
-                  <span>Boston, MA • Sophomore</span>
+                  <span>Austin, TX • Sophomore</span>
                 </div>
+              </InfoCard>
+
+              {/* Favorite Song */}
+              <InfoCard
+                id="music"
+                title="Favorite Song"
+                icon={Music}
+                iconColor="text-blue-600"
+                bgColor="bg-gradient-to-br from-blue-50/95 to-cyan-50/95"
+                borderColor="border-blue-200/40"
+                transform="-rotate-1"
+                position={{ top: "top-40", left: "left-48" }}
+                width="w-80"
+                expandedElement={expandedElement}
+                onElementClick={handleElementClick}
+                onCloseExpanded={handleCloseExpanded}
+              >
+                <p className="text-lg text-gray-700 mb-2">Calling After Me</p>
+                <p className="text-sm text-gray-600 mb-4">Wallows</p>
+                {expandedElement === "music" && (
+                  <div className="mt-4 pt-4 border-t border-blue-200">
+                    <p className="text-gray-600 text-sm mb-3">
+                      My favorite music genres for late-nights, exercise, and just relaxing:
+                    </p>
+                    <div className="space-y-2">
+                      {["Indie-Pop", "Hip Hop", "C-Pop"].map((genre) => (
+                        <div key={genre} className="text-xs text-gray-600 flex items-center gap-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                          {genre}
+                        </div>
+                      ))}
+                    </div>
+                    <AudioPlayer isExpanded={expandedElement === "music"} />
+                  </div>
+                )}
               </InfoCard>
 
               {/* Philosophy */}
@@ -209,24 +355,30 @@ export default function AboutSection() {
                 title="Philosophy"
                 icon={Lightbulb}
                 iconColor="text-yellow-600"
-                bgColor="bg-gradient-to-br from-amber-100/90 to-yellow-100/90"
+                bgColor="bg-gradient-to-br from-amber-50/95 to-yellow-50/95"
+                borderColor="border-amber-200/40"
                 transform="rotate-1"
-                position={{ top: "top-20", left: "left-64" }}
+                position={{ top: "top-24", left: "left-[28rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
                 <p className="text-gray-700 leading-relaxed text-sm mb-4 italic">
-                  "Technology should serve humanity and the planet - always learning, always building, always improving."
+                  "When you truly want something, the whole universe conspires to help you achieve it."
                 </p>
+                <p className="text-xs text-gray-500 text-right">— The Alchemist</p>
                 {expandedElement === "philosophy" && (
                   <div className="mt-4 pt-4 border-t border-yellow-200">
+                    <p className="text-gray-600 text-sm mb-3">
+                      Genuine passion and persistence create opportunities. 
+                      The world responds to authentic commitment.
+                    </p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">Core Values</h5>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">What This Means</h5>
                         <div className="space-y-2">
-                          {["Sustainability", "Accessibility", "Open Source", "Continuous Learning"].map((value) => (
+                          {["Authentic Goals", "Persistent Action", "Open to Opportunities", "Trust the Process"].map((value) => (
                             <div key={value} className="text-xs text-gray-600 flex items-center gap-2">
                               <div className="w-2 h-2 bg-yellow-500 rounded-full" />
                               {value}
@@ -235,9 +387,9 @@ export default function AboutSection() {
                         </div>
                       </div>
                       <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">Goals</h5>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">In Practice</h5>
                         <div className="space-y-2">
-                          {["Green Tech", "Education", "Community", "Innovation"].map((goal) => (
+                          {["Daily Learning", "Building Projects", "Helping Others", "Staying Curious"].map((goal) => (
                             <div key={goal} className="text-xs text-gray-600 flex items-center gap-2">
                               <div className="w-2 h-2 bg-green-500 rounded-full" />
                               {goal}
@@ -256,25 +408,25 @@ export default function AboutSection() {
                 title="Currently Reading"
                 icon={BookOpen}
                 iconColor="text-purple-600"
-                bgColor="bg-white/85"
-                borderColor="border-purple-200/30"
+                bgColor="bg-gradient-to-br from-purple-50/95 to-violet-50/95"
+                borderColor="border-purple-200/40"
                 transform="rotate-1"
-                position={{ top: "top-36", left: "left-[28rem]" }}
+                position={{ top: "top-80", left: "left-4" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
-                <p className="text-lg text-gray-700 font-medium mb-2">The Pragmatic Programmer</p>
-                <p className="text-sm text-gray-600 mb-4">Tech & Philosophy</p>
+                <p className="text-lg text-gray-700 font-medium mb-2"> Illusions</p>
+                <p className="text-sm text-gray-600 mb-4">By Richard Bach</p>
                 {expandedElement === "reading" && (
                   <div className="mt-4 pt-4 border-t border-purple-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      "A journey through practical programming wisdom that shapes how I approach every project."
+                      A book to question my perception of reality and challenge the illusions I have been living in.
                     </p>
                     <div className="space-y-2">
                       <h5 className="text-sm font-medium text-gray-800">Recent Reads</h5>
-                      {["Clean Code", "System Design Interview", "Atomic Habits"].map((book) => (
+                      {["Zero to One", "Person of Interest", "Tuesdays with Morrie"].map((book) => (
                         <div key={book} className="text-xs text-gray-600">
                           • {book}
                         </div>
@@ -290,23 +442,24 @@ export default function AboutSection() {
                 title="Current Game"
                 icon={Gamepad2}
                 iconColor="text-orange-600"
-                bgColor="bg-gradient-to-br from-orange-100/90 to-red-100/90"
+                bgColor="bg-gradient-to-br from-orange-50/95 to-red-50/95"
+                borderColor="border-orange-200/40"
                 transform="-rotate-2"
-                position={{ top: "top-12", left: "left-[44rem]" }}
+                position={{ top: "top-28", left: "left-[56rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
-                <p className="text-lg text-gray-700 font-medium mb-2">Baldur's Gate 3</p>
-                <p className="text-sm text-gray-600 mb-4">Strategy & RPG enthusiast</p>
+                <p className="text-lg text-gray-700 font-medium mb-2"> Clash of Clans</p>
+                <p className="text-sm text-gray-600 mb-4"> Town Hall 15 max lab max heroes basically the goat </p>
                 {expandedElement === "currentGame" && (
                   <div className="mt-4 pt-4 border-t border-orange-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Immersed in the world of Baldur's Gate 3, combining strategy with RPG elements.
+                      Other games:
                     </p>
                     <div className="space-y-2">
-                      {["Strategy", "RPG", "Adventure"].map((genre) => (
+                      {["Genshin Impact", "Minecraft", "Valorant"].map((genre) => (
                         <div key={genre} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
                           {genre}
@@ -321,25 +474,26 @@ export default function AboutSection() {
               <InfoCard
                 id="hobbies"
                 title="Hobbies"
-                icon={Camera}
+                icon={Music}
                 iconColor="text-green-600"
-                bgColor="bg-gradient-to-br from-green-100/90 to-emerald-100/90"
+                bgColor="bg-gradient-to-br from-green-50/95 to-emerald-50/95"
+                borderColor="border-green-200/40"
                 transform="rotate-1"
-                position={{ top: "top-28", left: "left-[56rem]" }}
+                position={{ top: "top-72", left: "left-[16rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
-                <p className="text-lg text-gray-700 mb-2">Hiking & Photography</p>
-                <p className="text-sm text-gray-600 mb-4">Digital Art • Nature Exploration</p>
+                <p className="text-lg text-gray-700 mb-2">Creative & Intellectual</p>
+                <p className="text-sm text-gray-600 mb-4">Music • Art • Reflection</p>
                 {expandedElement === "hobbies" && (
                   <div className="mt-4 pt-4 border-t border-green-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Exploring the outdoors and capturing life's moments through my camera.
+                      Finding things that keep me grounded (also off my phone)
                     </p>
                     <div className="space-y-2">
-                      {["Nature Photography", "Digital Art", "Outdoor Adventures"].map((interest) => (
+                      {["Acoustic Guitar", "Sketching", "Reading"].map((interest) => (
                         <div key={interest} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
                           {interest}
@@ -350,65 +504,33 @@ export default function AboutSection() {
                 )}
               </InfoCard>
 
-              {/* Favorite Song */}
+              {/* Random Facts */}
               <InfoCard
-                id="music"
-                title="Favorite Song"
-                icon={Music}
-                iconColor="text-blue-600"
-                bgColor="bg-gradient-to-br from-blue-100/90 to-cyan-100/90"
-                transform="-rotate-1"
-                position={{ top: "top-52", left: "left-[68rem]" }}
-                width="w-80"
-                expandedElement={expandedElement}
-                onElementClick={handleElementClick}
-                onCloseExpanded={handleCloseExpanded}
-              >
-                <p className="text-lg text-gray-700 mb-2">Lo-fi Hip Hop</p>
-                <p className="text-sm text-gray-600 mb-4">Tame Impala, Chill Beats</p>
-                {expandedElement === "music" && (
-                  <div className="mt-4 pt-4 border-t border-blue-200">
-                    <p className="text-gray-600 text-sm mb-3">
-                      The perfect soundtrack for coding sessions and late-night work.
-                    </p>
-                    <div className="space-y-2">
-                      {["Lo-fi", "Hip Hop", "Chill Beats"].map((genre) => (
-                        <div key={genre} className="text-xs text-gray-600 flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                          {genre}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </InfoCard>
-
-              {/* NEW CARD: Creative Expression */}
-              <InfoCard
-                id="creative"
-                title="Creative Expression"
-                icon={Palette}
-                iconColor="text-pink-600"
-                bgColor="bg-gradient-to-br from-pink-100/90 to-rose-100/90"
+                id="randomFacts"
+                title="Random Facts"
+                icon={Zap}
+                iconColor="text-orange-600"
+                bgColor="bg-gradient-to-br from-orange-50/95 to-amber-50/95"
+                borderColor="border-orange-200/40"
                 transform="rotate-2"
-                position={{ top: "top-8", left: "left-[80rem]" }}
+                position={{ top: "top-18", left: "left-[72rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
-                <p className="text-lg text-gray-700 mb-2">Digital Art & Design</p>
-                <p className="text-sm text-gray-600 mb-4">UI/UX • Illustrations • Logos</p>
-                {expandedElement === "creative" && (
-                  <div className="mt-4 pt-4 border-t border-pink-200">
+                <p className="text-lg text-gray-700 mb-2">Fun Facts</p>
+                <p className="text-sm text-gray-600 mb-4">Weird Stuff About Me</p>
+                {expandedElement === "randomFacts" && (
+                  <div className="mt-4 pt-4 border-t border-orange-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Expressing creativity through digital design, from UI/UX to custom illustrations.
+                      Everyone has their quirks. Here are a few of mine.
                     </p>
                     <div className="space-y-2">
-                      {["Figma", "Adobe Creative Suite", "Procreate", "Design Systems"].map((tool) => (
-                        <div key={tool} className="text-xs text-gray-600 flex items-center gap-2">
-                          <div className="w-2 h-2 bg-pink-500 rounded-full" />
-                          {tool}
+                      {["Can't read cursive", "Scared of colored pencils", "Self conscious about keychains", "Don't touch my mechanical pencils"].map((fact) => (
+                        <div key={fact} className="text-xs text-gray-600 flex items-center gap-2">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full" />
+                          {fact}
                         </div>
                       ))}
                     </div>
@@ -416,38 +538,6 @@ export default function AboutSection() {
                 )}
               </InfoCard>
 
-              {/* NEW CARD: Adventure Spirit */}
-              <InfoCard
-                id="adventure"
-                title="Adventure Spirit"
-                icon={Mountain}
-                iconColor="text-emerald-600"
-                bgColor="bg-gradient-to-br from-emerald-100/90 to-teal-100/90"
-                transform="-rotate-1"
-                position={{ top: "top-40", left: "left-[92rem]" }}
-                width="w-80"
-                expandedElement={expandedElement}
-                onElementClick={handleElementClick}
-                onCloseExpanded={handleCloseExpanded}
-              >
-                <p className="text-lg text-gray-700 mb-2">Outdoor Exploration</p>
-                <p className="text-sm text-gray-600 mb-4">Hiking • Camping • Photography</p>
-                {expandedElement === "adventure" && (
-                  <div className="mt-4 pt-4 border-t border-emerald-200">
-                    <p className="text-gray-600 text-sm mb-3">
-                      Finding inspiration in nature and pushing personal boundaries through outdoor adventures.
-                    </p>
-                    <div className="space-y-2">
-                      {["New England Trails", "Wildlife Photography", "Backpacking", "Rock Climbing"].map((activity) => (
-                        <div key={activity} className="text-xs text-gray-600 flex items-center gap-2">
-                          <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                          {activity}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </InfoCard>
 
               {/* RIGHT SIDE - Skills & Tools Cluster */}
               
@@ -457,9 +547,10 @@ export default function AboutSection() {
                 title="Technical Tools & Platforms"
                 icon={Zap}
                 iconColor="text-indigo-600"
-                bgColor="bg-gradient-to-br from-indigo-100/90 to-blue-100/90"
+                bgColor="bg-gradient-to-br from-indigo-50/95 to-blue-50/95"
+                borderColor="border-indigo-200/40"
                 transform="rotate-1"
-                position={{ top: "top-8", right: "right-0" }}
+                position={{ top: "top-40", right: "right-4" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
@@ -484,7 +575,7 @@ export default function AboutSection() {
                       <div>
                         <h5 className="text-sm font-medium text-gray-800 mb-2">DevOps</h5>
                         <div className="space-y-2">
-                          {["Docker", "Git", "CI/CD", "AWS"].map((tool) => (
+                          {["Kubernetes", "CI/CD Pipelines", "Terraform", "Sentry"].map((tool) => (
                             <div key={tool} className="text-xs text-gray-600 flex items-center gap-2">
                               <div className="w-2 h-2 bg-indigo-500 rounded-full" />
                               {tool}
@@ -495,7 +586,7 @@ export default function AboutSection() {
                       <div>
                         <h5 className="text-sm font-medium text-gray-800 mb-2">Platforms</h5>
                         <div className="space-y-2">
-                          {["Vercel", "Netlify", "Heroku", "DigitalOcean"].map((platform) => (
+                          {["Netlify", "Heroku", "DigitalOcean", "Cloudflare"].map((platform) => (
                             <div key={platform} className="text-xs text-gray-600 flex items-center gap-2">
                               <div className="w-2 h-2 bg-blue-500 rounded-full" />
                               {platform}
@@ -514,16 +605,17 @@ export default function AboutSection() {
                 title="Frontend"
                 icon={Code2}
                 iconColor="text-blue-600"
-                bgColor="bg-gradient-to-br from-blue-100/90 to-cyan-100/90"
+                bgColor="bg-gradient-to-br from-blue-50/95 to-cyan-50/95"
+                borderColor="border-blue-200/40"
                 transform="rotate-2"
-                position={{ top: "top-16", right: "right-[28rem]" }}
+                position={{ top: "top-96", right: "right-[26rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {["React", "Next.js", "TypeScript", "Tailwind"].map((skill) => (
+                  {["Next.js 14", "TypeScript", "React", "Tailwind CSS"].map((skill) => (
                     <span
                       key={skill}
                       className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
@@ -538,7 +630,7 @@ export default function AboutSection() {
                       <div>
                         <h5 className="text-sm font-medium text-gray-800 mb-2">Advanced</h5>
                         <div className="space-y-2">
-                          {["React Hooks", "Next.js 14", "TypeScript"].map((skill) => (
+                          {["Server Components", "React Hooks", "CSS-in-JS", "State Management"].map((skill) => (
                             <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
                               <div className="w-2 h-2 bg-green-500 rounded-full" />
                               {skill}
@@ -547,9 +639,9 @@ export default function AboutSection() {
                         </div>
                       </div>
                       <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">Learning</h5>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">Additional</h5>
                         <div className="space-y-2">
-                          {["Three.js", "Framer Motion", "Zustand"].map((skill) => (
+                          {["Framer Motion", "Three.js", "Zustand", "Svelte"].map((skill) => (
                             <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
                               <div className="w-2 h-2 bg-yellow-500 rounded-full" />
                               {skill}
@@ -568,16 +660,17 @@ export default function AboutSection() {
                 title="Backend"
                 icon={Code2}
                 iconColor="text-green-600"
-                bgColor="bg-gradient-to-br from-green-100/90 to-emerald-100/90"
+                bgColor="bg-gradient-to-br from-green-50/95 to-emerald-50/95"
+                borderColor="border-green-200/40"
                 transform="-rotate-1"
-                position={{ top: "top-24", right: "right-[20rem]" }}
+                position={{ top: "top-56", right: "right-[20rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {["Python", "Node.js", "PostgreSQL", "Redis"].map((skill) => (
+                  {["Django", "Node.js", "ASP.NET Core", "tRPC"].map((skill) => (
                     <span
                       key={skill}
                       className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
@@ -592,7 +685,7 @@ export default function AboutSection() {
                       Building scalable APIs and microservices with focus on performance and sustainability.
                     </p>
                     <div className="space-y-2">
-                      {["FastAPI & Django", "Database Design", "Caching Strategies", "API Security"].map((skill) => (
+                      {["Microservices", "Django & FastAPI", "C# & .NET", "Docker Containers"].map((skill) => (
                         <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
                           {skill}
@@ -609,16 +702,17 @@ export default function AboutSection() {
                 title="AI/ML"
                 icon={Code2}
                 iconColor="text-purple-600"
-                bgColor="bg-gradient-to-br from-purple-100/90 to-violet-100/90"
+                bgColor="bg-gradient-to-br from-purple-50/95 to-violet-50/95"
+                borderColor="border-purple-200/40"
                 transform="rotate-1"
-                position={{ top: "top-48", right: "right-[12rem]" }}
+                position={{ top: "top-80", right: "right-[12rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {["TensorFlow", "PyTorch", "OpenAI API"].map((skill) => (
+                  {["TensorFlow", "PyTorch", "Hugging Face"].map((skill) => (
                     <span
                       key={skill}
                       className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
@@ -633,7 +727,7 @@ export default function AboutSection() {
                       Exploring the latest advancements in AI and Machine Learning.
                     </p>
                     <div className="space-y-2">
-                      {["TensorFlow", "PyTorch", "OpenAI API"].map((skill) => (
+                      {["Azure ML", "Feature Engineering", "Model Deployment"].map((skill) => (
                         <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
                           {skill}
@@ -650,9 +744,10 @@ export default function AboutSection() {
                 title="Learning Journey"
                 icon={Globe}
                 iconColor="text-teal-600"
-                bgColor="bg-gradient-to-br from-teal-100/90 to-cyan-100/90"
+                bgColor="bg-gradient-to-br from-teal-50/95 to-cyan-50/95"
+                borderColor="border-teal-200/40"
                 transform="-rotate-2"
-                position={{ top: "top-32", right: "right-[36rem]" }}
+                position={{ top: "top-8", right: "right-[28rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
@@ -665,41 +760,58 @@ export default function AboutSection() {
                     <p className="text-gray-600 text-sm mb-3">
                       Always expanding my knowledge through structured learning and hands-on projects.
                     </p>
-                    <div className="space-y-2">
-                      {["Coursera", "Udemy", "AWS Certifications", "Open Source"].map((platform) => (
-                        <div key={platform} className="text-xs text-gray-600 flex items-center gap-2">
-                          <div className="w-2 h-2 bg-teal-500 rounded-full" />
-                          {platform}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">Completed</h5>
+                        <div className="space-y-2">
+                          {["Coursera (Deep Learning)", "Udemy (DeepRacer CV)", "AWS Certifications", "Open Source"].map((platform) => (
+                            <div key={platform} className="text-xs text-gray-600 flex items-center gap-2">
+                              <div className="w-2 h-2 bg-teal-500 rounded-full" />
+                              {platform}
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
+                      <div>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">Roadmap</h5>
+                        <div className="space-y-2">
+                          {["Kubernetes", "Terraform Automation", "Cloud Architecture", "Security"].map((platform) => (
+                            <div key={platform} className="text-xs text-gray-600 flex items-center gap-2">
+                              <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                              {platform}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
               </InfoCard>
 
-              {/* NEW CARD: Community & Networking */}
+              {/* Community & Leadership */}
               <InfoCard
                 id="community"
-                title="Community & Networking"
+                title="Community"
                 icon={Heart}
                 iconColor="text-rose-600"
-                bgColor="bg-gradient-to-br from-rose-100/90 to-pink-100/90"
+                bgColor="bg-gradient-to-br from-rose-50/95 to-pink-50/95"
+                borderColor="border-rose-200/40"
                 transform="rotate-1"
-                position={{ top: "top-56", right: "right-[44rem]" }}
+                position={{ top: "top-64", right: "right-[38rem]" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
-              >
+            >
                 <p className="text-lg text-gray-700 mb-2">Building Connections</p>
-                <p className="text-sm text-gray-600 mb-4">Tech Meetups • Hackathons</p>
+                <p className="text-sm text-gray-600 mb-4">Clubs • Hackathons</p>
                 {expandedElement === "community" && (
                   <div className="mt-4 pt-4 border-t border-rose-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Actively participating in the tech community and building meaningful professional relationships.
+                      Actively participating in the academic community and building meaningful relationships with my peers
                     </p>
                     <div className="space-y-2">
-                      {["Local Meetups", "Hackathons", "Mentorship", "Open Source"].map((activity) => (
+                      {["Tidal TAMU", "Workshops", "Hackathons", "Mentoring"].map((activity) => (
                         <div key={activity} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-rose-500 rounded-full" />
                           {activity}

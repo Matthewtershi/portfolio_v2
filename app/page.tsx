@@ -169,6 +169,9 @@ export default function Portfolio() {
         targetScrollLeft = index * sectionWidth
       }
 
+      // Update current section immediately for better UX
+      setCurrentSection(index)
+
       gsap.to(container, {
         scrollLeft: targetScrollLeft,
         duration: 1.2,
@@ -224,26 +227,26 @@ export default function Portfolio() {
   return (
     <div className="relative h-screen overflow-hidden">
       {/* Fixed Left Navigation */}
-      <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center space-y-6">
+      <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col space-y-6">
         {sections.map((section, index) => (
           <button
             key={section}
             onClick={() => navigateToSection(index)}
-            className={`nav-item group relative flex items-center transition-all duration-300 ${
+            className={`nav-item group relative flex items-start transition-all duration-300 ${
               currentSection === index
                 ? "text-[var(--portfolio-gold)]"
                 : "text-gray-400 hover:text-[var(--portfolio-brown)]"
             }`}
           >
             <div
-              className={`nav-dot nav-dot-${index} w-3 h-3 rounded-full border-2 transition-all duration-300 ${
+              className={`nav-dot nav-dot-${index} w-3 h-3 rounded-full border-2 transition-all duration-300 flex-shrink-0 mt-1 ${
                 currentSection === index
                   ? "bg-[var(--portfolio-gold)] border-[var(--portfolio-gold)]"
                   : "border-gray-400 group-hover:border-[var(--portfolio-brown)]"
               }`}
             />
             <span
-              className={`ml-4 text-sm font-medium transition-all duration-300 ${
+              className={`ml-4 text-sm font-medium transition-all duration-300 whitespace-nowrap ${
                 currentSection === index
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"

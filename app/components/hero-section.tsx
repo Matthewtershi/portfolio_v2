@@ -162,19 +162,19 @@ export default function HeroSection() {
           {/* Enhanced social media icons with GSAP hover effects */}
           <div ref={socialRef} className="flex space-x-5">
             {[
-              { icon: Mail, href: "mailto:matthewtershi@gmail.com", label: "Email", color: "bg-amber-600" },
-              { icon: Linkedin, href: "https://www.linkedin.com/in/matthew-shi-a2376b239/", label: "LinkedIn", color: "bg-amber-700" },
+              { icon: Mail, href: "mailto:matthewtershi@gmail.com", label: "Email", color: "bg-amber-500/80 hover:bg-amber-500" },
+              { icon: Linkedin, href: "https://www.linkedin.com/in/matthew-shi-a2376b239/", label: "LinkedIn", color: "bg-blue-600/80 hover:bg-blue-600" },
               {
                 icon: Github,
                 href: "https://github.com/Matthewtershi",
                 label: "GitHub",
-                color: "bg-[var(--portfolio-brown)]",
+                color: "bg-gray-700/80 hover:bg-gray-700",
               },
               {
                 icon: Instagram,
                 href: "https://www.instagram.com/matthew.sih8/",
                 label: "Instagram",
-                color: "bg-gradient-to-br from-amber-500 to-orange-400",
+                color: "bg-gradient-to-br from-pink-500/80 to-purple-500/80 hover:from-pink-500 hover:to-purple-500",
               },
             ].map(({ icon: Icon, href, label, color }) => (
               <a
@@ -182,7 +182,7 @@ export default function HeroSection() {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`social-icon w-14 h-14 rounded-full ${color} flex items-center justify-center text-white hover:bg-[var(--portfolio-gold)] transition-all duration-300 group`}
+                className={`social-icon w-12 h-12 rounded-full ${color} flex items-center justify-center text-white transition-all duration-300 group shadow-lg hover:shadow-xl`}
                 aria-label={label}
                 onMouseEnter={(e) => {
                   gsap.to(e.currentTarget, {
@@ -201,7 +201,7 @@ export default function HeroSection() {
                   })
                 }}
               >
-                <Icon size={22} className="group-hover:scale-110 transition-transform duration-300" />
+                <Icon size={20} className="group-hover:scale-110 transition-transform duration-300" />
               </a>
             ))}
           </div>
