@@ -160,12 +160,12 @@ export default function JourneySection() {
       <div ref={headerRef} className="px-16 py-16">
         <div className="journey-header">
           <h2 className="text-4xl lg:text-5xl font-serif font-bold text-[var(--portfolio-brown)] mb-4">My Journey</h2>
-          <p className="text-lg my-2 text-gray-600 font-medium"> Here is my story so far. If you want to see more, check out my work on <a href="https://github.com/Matthewtershi" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800"> Github </a> where I share everything I've worked on!  </p>
+          <p className="text-lg my-2 text-gray-600 font-medium"> Here is my story so far. If you want to see more, check out my work on <a href="https://github.com/Matthewtershi" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800"> Github </a> where I share everything I&apos;ve worked on!  </p>
         </div>
 
         {/* Enhanced Skills Pills with GSAP animations */}
         <div className="flex flex-wrap gap-4">
-          {skills.map((skill, index) => {
+          {skills.map((skill) => {
             const IconComponent = skill.icon
             return (
               <span

@@ -222,7 +222,7 @@ export default function Portfolio() {
         clearTimeout(scrollTimeoutRef.current)
       }
     }
-  }, [])
+  }, [sections.length])
 
   return (
     <div className="relative h-screen overflow-hidden">

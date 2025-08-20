@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
-import { Code2, Heart, BookOpen, Coffee, MapPin, Lightbulb, Camera, Gamepad2, X, Music, Globe, Zap, Palette, Mountain, Trophy } from "lucide-react"
+import { Code2, Heart, BookOpen, MapPin, Lightbulb, Gamepad2, X, Music, Globe, Zap } from "lucide-react"
 
 
 
@@ -105,7 +105,7 @@ const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
         </button>
         
         <div className="text-sm text-gray-600">
-          {isPlaying ? 'Playing...' : 'Click to play'}
+          {isPlaying ? "Playing..." : "Click to play"}
         </div>
       </div>
       
@@ -272,7 +272,7 @@ export default function AboutSection() {
           <div className="journey-header">
             <h2 className="text-4xl lg:text-5xl font-serif font-bold text-[var(--portfolio-brown)] mb-4">About Me</h2>
             <p className="text-lg text-gray-600 font-medium">
-              Beyond coding, I'm passionate about basketball, drawing, and the outdoors. Here's a little more about me inluding my tastes, interests, and skills!
+              Beyond coding, I&apos;m passionate about basketball, drawing, and the outdoors. Here&apos;s a little more about me inluding my tastes, interests, and skills!
             </p>
           </div>
         </div>
@@ -299,12 +299,12 @@ export default function AboutSection() {
                 onCloseExpanded={handleCloseExpanded}
               >
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  I'm a student pursuing a career in software engineering
+                  I&apos;m a student pursuing a career in software engineering
                 </p>
                 {expandedElement === "intro" && (
                   <div className="mt-4 pt-4 border-t border-amber-200">
                     <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                      I'm passionate about turning ideas into solutions that people can utilize to improve theirs or others lives.
+                      I&apos;m passionate about turning ideas into solutions that people can utilize to improve theirs or others lives.
                     </p>
                   </div>
                 )}
@@ -365,7 +365,7 @@ export default function AboutSection() {
                 onCloseExpanded={handleCloseExpanded}
               >
                 <p className="text-gray-700 leading-relaxed text-sm mb-4 italic">
-                  "When you truly want something, the whole universe conspires to help you achieve it."
+                                     &quot;When you truly want something, the whole universe conspires to help you achieve it.&quot;
                 </p>
                 <p className="text-xs text-gray-500 text-right">— The Alchemist</p>
                 {expandedElement === "philosophy" && (
@@ -527,7 +527,7 @@ export default function AboutSection() {
                       Everyone has their quirks. Here are a few of mine.
                     </p>
                     <div className="space-y-2">
-                      {["Can't read cursive", "Scared of colored pencils", "Self conscious about keychains", "Don't touch my mechanical pencils"].map((fact) => (
+                      {["Can&apos;t read cursive", "Scared of colored pencils", "Self conscious about keychains", "Don&apos;t touch my mechanical pencils"].map((fact) => (
                         <div key={fact} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-orange-500 rounded-full" />
                           {fact}

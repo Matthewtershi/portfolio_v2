@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Github, Star, GitFork, Code, TrendingUp } from "lucide-react"
+import { Github, Code, TrendingUp } from "lucide-react"
 
 interface Repository {
   name: string

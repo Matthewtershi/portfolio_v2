@@ -154,7 +154,7 @@ export default function HeroSection() {
             {/* Enhanced description */}
             <div className="mb-10 max-w-2xl">
               <p className="text-lg text-gray-700 leading-relaxed font-medium">
-                Hey I'm Matthew, a sophomore at Texas A&M interested in software, machine learning, and energy. Feel free to contact me at matthewtershi@tamu.edu!
+                Hey I&apos;m Matthew, a sophomore at Texas A&M interested in software, machine learning, and energy. Feel free to contact me at matthewtershi@tamu.edu!
               </p>
             </div>
           </div>
