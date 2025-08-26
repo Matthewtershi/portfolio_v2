@@ -7,7 +7,6 @@ import { Code2, Heart, BookOpen, MapPin, Lightbulb, Gamepad2, X, Music, Globe, Z
 
 
 
-// Card component interface
 interface CardProps {
   id: string
   title: string
@@ -28,54 +27,66 @@ interface CardProps {
   onCloseExpanded: (e: React.MouseEvent) => void
 }
 
-// Simple Audio Player Component
 const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [audio] = useState(new Audio('/audio/calling-after-me.mp3')) // Local MP3 file
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    audio.addEventListener('ended', () => setIsPlaying(false))
-    audio.addEventListener('loadedmetadata', () => setDuration(audio.duration))
-    audio.addEventListener('timeupdate', () => setCurrentTime(audio.currentTime))
+    // Only create audio element on client side
+    const audioElement = new Audio('/audio/calling-after-me.mp3')
+    setAudio(audioElement)
     
     return () => {
-      audio.removeEventListener('ended', () => setIsPlaying(false))
-      audio.removeEventListener('loadedmetadata', () => setDuration(audio.duration))
-      audio.removeEventListener('timeupdate', () => setCurrentTime(audio.currentTime))
-      // Clean up audio when component unmounts
-      if (isPlaying) {
-        audio.pause()
-        audio.currentTime = 0
+      if (audioElement) {
+        audioElement.pause()
+        audioElement.currentTime = 0
       }
     }
-  }, [audio, isPlaying])
+  }, [])
 
-  // Pause and reset audio when card loses focus or is closed
   useEffect(() => {
-    if (!isExpanded) {
-      if (isPlaying) {
-        audio.pause()
-        audio.currentTime = 0
-        setIsPlaying(false)
-      }
+    if (!audio) return
+    
+    const handleEnded = () => setIsPlaying(false)
+    const handleLoadedMetadata = () => setDuration(audio.duration)
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
+    
+    audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+    audio.addEventListener('timeupdate', handleTimeUpdate)
+    
+    return () => {
+      audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
+    }
+  }, [audio])
+
+  useEffect(() => {
+    if (!audio || !isExpanded) return
+    
+    if (isPlaying) {
+      audio.pause()
+      audio.currentTime = 0
+      setIsPlaying(false)
     }
   }, [isExpanded, audio, isPlaying])
 
   const togglePlay = () => {
+    if (!audio) return
+    
     if (isPlaying) {
       audio.pause()
       setIsPlaying(false)
     } else {
-      // Only play if the card is expanded
       if (isExpanded) {
         audio.play()
         setIsPlaying(true)
       }
     }
   }
-
 
 
   const formatTime = (time: number) => {
@@ -109,13 +120,11 @@ const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
         </div>
       </div>
       
-      {/* Timer Display */}
       <div className="flex justify-between text-xs text-gray-500">
         <span>{formatTime(currentTime)}</span>
         <span>{formatTime(duration)}</span>
       </div>
       
-      {/* Progress Bar */}
       <div className="w-full bg-gray-200 rounded-full h-1 mt-1">
         <div 
           className="bg-green-500 h-1 rounded-full transition-all duration-100"
@@ -126,7 +135,6 @@ const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
   )
 }
 
-// Reusable Card Component
 const InfoCard: React.FC<CardProps> = ({
   id,
   title,
@@ -245,7 +253,6 @@ export default function AboutSection() {
       className="relative h-full bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 overflow-hidden"
     >
       <div className="absolute inset-0 opacity-50">
-        {/* LEFT SIDE - MOST DENSE (reduced from 20 to 8 shapes) */}
         <div className="absolute top-20 left-20 w-32 h-32 bg-amber-400 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-40 left-32 w-24 h-24 bg-orange-400 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
         <div className="absolute bottom-32 left-1/3 w-40 h-40 bg-yellow-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
@@ -255,19 +262,15 @@ export default function AboutSection() {
         <div className="absolute bottom-1/6 left-1/8 w-32 h-32 bg-orange-200 rounded-full blur-2xl opacity-80 animate-pulse" style={{ animationDelay: '1.8s' }} />
         <div className="absolute top-1/2 left-1/8 w-20 h-20 bg-yellow-200 rounded-full blur-xl opacity-75 animate-pulse" style={{ animationDelay: '0.2s' }} />
         
-        {/* CENTER-LEFT - MEDIUM DENSITY (reduced from 3 to 2 shapes) */}
         <div className="absolute top-1/4 left-2/3 w-18 h-18 bg-amber-400 rounded-full blur-lg animate-pulse" style={{ animationDelay: '0.1s' }} />
         <div className="absolute bottom-1/3 left-3/4 w-14 h-14 bg-orange-300 rounded-full blur-xl animate-pulse" style={{ animationDelay: '0.8s' }} />
         
-        {/* CENTER - LOW DENSITY (reduced from 2 to 1 shape) */}
         <div className="absolute top-1/2 left-4/5 w-10 h-10 bg-amber-300 rounded-full blur-lg animate-pulse" style={{ animationDelay: '0.6s' }} />
         
-        {/* RIGHT SIDE - VERY LOW DENSITY (kept at 1 shape) */}
         <div className="absolute top-1/3 left-6/7 w-6 h-6 bg-yellow-300 rounded-full blur-sm animate-pulse" style={{ animationDelay: '0.9s' }} />
       </div>
 
       <div className="relative z-10 h-full flex flex-col px-8">
-        {/* Header Section - Matching Journey page format */}
         <div className="about-header py-12">
           <div className="journey-header">
             <h2 className="text-4xl lg:text-5xl font-serif font-bold text-[var(--portfolio-brown)] mb-4">About Me</h2>
@@ -281,7 +284,6 @@ export default function AboutSection() {
           <div className="h-full overflow-hidden pb-8">
             <div className="relative h-full max-w-[1400px] mx-auto">
               
-              {/* LEFT SIDE - Personal & Interests Cluster */}
               
               {/* Personal Introduction */}
               <InfoCard
@@ -537,9 +539,6 @@ export default function AboutSection() {
                   </div>
                 )}
               </InfoCard>
-
-
-              {/* RIGHT SIDE - Skills & Tools Cluster */}
               
               {/* Technical Tools & Platforms - NEW CARD */}
               <InfoCard
@@ -738,7 +737,7 @@ export default function AboutSection() {
                 )}
               </InfoCard>
 
-              {/* NEW CARD: Learning Journey */}
+              {/* Learning Journey */}
               <InfoCard
                 id="learning"
                 title="Learning Journey"

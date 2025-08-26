@@ -3,10 +3,17 @@
 import { useState, useEffect, useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import dynamic from "next/dynamic"
 import HeroSection from "@/app/components/hero-section"
 import AboutSection from "@/app/components/about-section"
 import JourneySection from "@/app/components/journey-section"
 import ContactSection from "@/app/components/contact-section"
+
+// Dynamically import loading overlay with no SSR to prevent hydration issues
+const LoadingOverlay = dynamic(() => import("./components/loading-overlay"), {
+  ssr: false,
+  loading: () => null
+})
 
 // Register GSAP plugins
 if (typeof window !== "undefined") {
@@ -29,14 +36,24 @@ export default function Portfolio() {
       const currentSectionIndex = scrollLeft / sectionWidth
       const nearestSectionIndex = Math.round(currentSectionIndex)
 
-      // Only apply magnetic effect to hero (0), about (1), and journey (2) sections
-      if (nearestSectionIndex <= 2) {
-        const distanceFromSection = Math.abs(currentSectionIndex - nearestSectionIndex)
-        const threshold = 0.3 // 30% of viewport width
+      const isMainSectionBoundary = nearestSectionIndex === 0 || // Hero
+                                   nearestSectionIndex === 1 || // About  
+                                   nearestSectionIndex === 2 || // Journey start
+                                   nearestSectionIndex === 3    // Contact
 
-        // If within threshold, gently snap to section start
+      if (isMainSectionBoundary) {
+        const distanceFromSection = Math.abs(currentSectionIndex - nearestSectionIndex)
+        const threshold = 0.35 
+
         if (distanceFromSection < threshold && distanceFromSection > 0.05) {
-          const targetScrollLeft = nearestSectionIndex * sectionWidth
+          let targetScrollLeft: number
+
+          if (nearestSectionIndex === 3) {
+            const totalWidth = container.scrollWidth
+            targetScrollLeft = totalWidth - sectionWidth
+          } else {
+            targetScrollLeft = nearestSectionIndex * sectionWidth
+          }
 
           gsap.to(container, {
             scrollLeft: targetScrollLeft,
@@ -51,22 +68,31 @@ export default function Portfolio() {
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (containerRef.current) {
-        // Prevent default vertical scrolling
         e.preventDefault()
 
         const container = containerRef.current
-        const scrollAmount = e.deltaY * 5 // Increased multiplier for easier, longer scrolling
-
-        // Add momentum-based scrolling
+        const sectionWidth = container.clientWidth
+        
         const currentScrollLeft = container.scrollLeft
+        const currentSection = Math.round(currentScrollLeft / sectionWidth)
+        
+        const baseScrollAmount = e.deltaY * 4
+        let scrollAmount = baseScrollAmount
+        
+        const distanceFromSection = Math.abs((currentScrollLeft % sectionWidth) - (sectionWidth / 2))
+        
+        if (distanceFromSection < sectionWidth * 0.4) {
+        } else if (distanceFromSection > sectionWidth * 0.3) {
+          scrollAmount *= 1.8 
+        }
+        
         const targetScrollLeft = currentScrollLeft + scrollAmount
 
-        // Use GSAP for smoother scrolling animation
         gsap.to(container, {
           scrollLeft: targetScrollLeft,
-          duration: 0.3,
+          duration: 0.5,
           ease: "power2.out",
-          overwrite: true,
+          overwrite: "auto",
         })
 
         if (scrollTimeoutRef.current) {
@@ -75,54 +101,51 @@ export default function Portfolio() {
 
         scrollTimeoutRef.current = setTimeout(() => {
           applyMagneticScroll()
-        }, 150) // Wait 150ms after scrolling stops
+        }, 250)
       }
     }
 
     const container = containerRef.current
     if (container) {
-      // Add wheel event listener with passive: false to allow preventDefault
       container.addEventListener("wheel", handleWheel, { passive: false })
       return () => container.removeEventListener("wheel", handleWheel)
     }
   }, [])
 
-  // Track scroll position to update navigation
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout | null = null
     
     const handleScroll = () => {
       if (containerRef.current && !isScrollingRef.current) {
-        // Clear any existing timeout
         if (scrollTimeout) {
           clearTimeout(scrollTimeout)
         }
         
-        // Add a small delay to prevent rapid section changes
-        scrollTimeout = setTimeout(() => {
-          const container = containerRef.current
-          if (!container) return
-          
-          const scrollLeft = container.scrollLeft
-          const sectionWidth = container.clientWidth
-          
-          // Calculate which section is most visible
-          let newSection = Math.floor(scrollLeft / sectionWidth)
-          
-          // Check if we're closer to the next section
-          const remainder = scrollLeft % sectionWidth
-          if (remainder > sectionWidth * 0.5) {
-            newSection = Math.min(newSection + 1, sections.length - 1)
-          }
-          
-          // Ensure section is within bounds
-          newSection = Math.max(0, Math.min(newSection, sections.length - 1))
-          
-          // Only update if the section actually changed and is valid
-          if (newSection !== currentSection && newSection >= 0 && newSection < sections.length) {
-            setCurrentSection(newSection)
-          }
-        }, 50) // 100ms delay
+         scrollTimeout = setTimeout(() => {
+           const container = containerRef.current
+           if (!container) return
+           
+           const scrollLeft = container.scrollLeft
+           const sectionWidth = container.clientWidth
+           const totalWidth = container.scrollWidth
+           
+           let newSection = Math.floor(scrollLeft / sectionWidth)
+           
+           if (scrollLeft >= totalWidth - sectionWidth) {
+             newSection = 3 // Contact section
+           } else {
+             const remainder = scrollLeft % sectionWidth
+             if (remainder > sectionWidth * 0.5) {
+               newSection = Math.min(newSection + 1, sections.length - 1)
+             }
+           }
+           
+           newSection = Math.max(0, Math.min(newSection, sections.length - 1))
+           
+           if (newSection !== currentSection && newSection >= 0 && newSection < sections.length) {
+             setCurrentSection(newSection)
+           }
+         }, 50)
       }
     }
 
@@ -138,10 +161,8 @@ export default function Portfolio() {
     }
   }, [currentSection, sections.length])
 
-  // Initialize GSAP animations
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Initial page load animation
       gsap.fromTo(".nav-item", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.6, stagger: 0.1, delay: 0.5 })
       gsap.fromTo(".bottom-nav", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, delay: 0.8 })
       gsap.fromTo(".copyright", { opacity: 0 }, { opacity: 1, duration: 0.6, delay: 1 })
@@ -159,17 +180,13 @@ export default function Portfolio() {
       let targetScrollLeft: number
       
       if (index === sections.length - 1) {
-        // For the last section (Contact), scroll to show it fully
-        // Calculate the maximum scroll position that shows the contact section completely
         const totalWidth = container.scrollWidth
         const maxScrollLeft = totalWidth - sectionWidth
         targetScrollLeft = maxScrollLeft
       } else {
-        // For other sections, scroll to the exact start
         targetScrollLeft = index * sectionWidth
       }
 
-      // Update current section immediately for better UX
       setCurrentSection(index)
 
       gsap.to(container, {
@@ -183,35 +200,34 @@ export default function Portfolio() {
     }
   }
 
-  // Animate navigation elements on section change
   useEffect(() => {
     gsap.to(".nav-progress", {
       height: `${((currentSection + 1) / sections.length) * 100}%`,
-      duration: 0.8,
-      ease: "power2.inOut",
+      duration: 1.2,
+      ease: "power3.out",
     })
 
-    // Animate active nav item
     gsap.to(".nav-dot", {
       scale: 1,
-      duration: 0.3,
+      duration: 0.4,
+      ease: "power2.out",
     })
 
     gsap.to(`.nav-dot-${currentSection}`, {
-      scale: 1.25,
-      duration: 0.3,
+      scale: 1.4,
+      duration: 0.5,
       ease: "back.out(1.7)",
     })
 
-    // Animate bottom nav dots
     gsap.to(".bottom-dot", {
       scale: 1,
-      duration: 0.3,
+      duration: 0.4,
+      ease: "power2.out",
     })
 
     gsap.to(`.bottom-dot-${currentSection}`, {
-      scale: 1.25,
-      duration: 0.3,
+      scale: 1.4,
+      duration: 0.5,
       ease: "back.out(1.7)",
     })
   }, [currentSection])
@@ -225,8 +241,9 @@ export default function Portfolio() {
   }, [sections.length])
 
   return (
-    <div className="relative h-screen overflow-hidden">
-      {/* Fixed Left Navigation */}
+    <>
+      <LoadingOverlay />
+      <div className="relative h-screen overflow-hidden">
       <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col space-y-6">
         {sections.map((section, index) => (
           <button
@@ -258,14 +275,18 @@ export default function Portfolio() {
         ))}
       </nav>
 
-      {/* Progress indicator - moved to middle right */}
       <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center">
         <div className="w-1 h-24 bg-gray-300 relative">
           <div className="nav-progress w-full bg-[var(--portfolio-gold)] transition-all duration-1000 ease-out h-0" />
         </div>
       </div>
 
-      {/* Bottom Navigation Dots */}
+      <div className="section-indicator fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 opacity-0 pointer-events-none">
+        <div className="bg-[var(--portfolio-gold)] text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium">
+          Section Locked
+        </div>
+      </div>
+
       <nav className="bottom-nav fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex space-x-4">
         {sections.map((_, index) => (
           <button
@@ -280,10 +301,8 @@ export default function Portfolio() {
         ))}
       </nav>
 
-      {/* Copyright */}
       <div className="copyright fixed bottom-4 right-6 z-50 text-sm text-gray-500">© 2024 Matthew Shi</div>
 
-      {/* Main Horizontal Scroll Container */}
       <div
         ref={containerRef}
         className="flex h-full overflow-x-auto overflow-y-hidden"
@@ -319,5 +338,6 @@ export default function Portfolio() {
         </div>
       </div>
     </div>
+    </>
   )
 }

@@ -13,7 +13,6 @@ export default function HeroSection() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Set initial states
       gsap.set([nameRef.current, contentRef.current, socialRef.current], {
         opacity: 0,
         x: -50,
@@ -25,10 +24,8 @@ export default function HeroSection() {
         rotation: 0,
       })
 
-      // Create entrance timeline
       const tl = gsap.timeline({ delay: 0.5 })
 
-      // Animate geometric elements first
       tl.to(".hero-geometry", {
         opacity: 1,
         scale: 1,
@@ -38,7 +35,6 @@ export default function HeroSection() {
         ease: "back.out(1.7)",
       })
 
-      // Animate name with dramatic effect
       tl.to(
         nameRef.current,
         {
@@ -50,7 +46,6 @@ export default function HeroSection() {
         "-=0.5",
       )
 
-      // Animate content
       tl.to(
         contentRef.current,
         {
@@ -62,7 +57,6 @@ export default function HeroSection() {
         "-=0.6",
       )
 
-      // Animate social icons
       tl.to(
         socialRef.current,
         {
@@ -74,7 +68,6 @@ export default function HeroSection() {
         "-=0.4",
       )
 
-      // Add floating animation to geometric elements
       gsap.to(".hero-float", {
         y: -10,
         duration: 2,
@@ -84,7 +77,6 @@ export default function HeroSection() {
         stagger: 0.2,
       })
 
-      // Add rotation animation to squares
       gsap.to(".hero-rotate", {
         rotation: "+=360",
         duration: 20,
@@ -98,33 +90,26 @@ export default function HeroSection() {
 
   return (
     <div ref={heroRef} className="relative h-full bg-[var(--portfolio-beige)] overflow-hidden">
-      {/* Enhanced Geometric Background Elements */}
       <div ref={geometryRef} className="absolute inset-0 pointer-events-none">
-        {/* Floating circles with GSAP animations */}
         <div className="hero-geometry hero-float absolute top-16 right-32 w-40 h-40 rounded-full bg-[var(--portfolio-gold)] opacity-8" />
         <div className="hero-geometry hero-float absolute top-32 right-20 w-24 h-24 rounded-full bg-[var(--portfolio-gold)] opacity-12" />
         <div className="hero-geometry hero-float absolute bottom-32 right-24 w-32 h-32 rounded-full bg-[var(--portfolio-brown)] opacity-6" />
         <div className="hero-geometry hero-float absolute top-1/3 right-1/4 w-20 h-20 rounded-full bg-[var(--portfolio-gold)] opacity-10" />
         <div className="hero-geometry hero-float absolute bottom-1/4 right-1/3 w-16 h-16 rounded-full bg-[var(--portfolio-brown)] opacity-8" />
 
-        {/* Rotated squares with GSAP animations */}
         <div className="hero-geometry hero-rotate absolute top-1/4 right-1/3 w-24 h-24 bg-[var(--portfolio-gold)] opacity-12" />
         <div className="hero-geometry hero-rotate absolute top-1/2 right-1/5 w-18 h-18 bg-[var(--portfolio-brown)] opacity-10" />
         <div className="hero-geometry hero-rotate absolute bottom-1/3 right-2/5 w-14 h-14 bg-[var(--portfolio-gold)] opacity-8" />
         <div className="hero-geometry hero-rotate absolute top-3/4 right-1/2 w-20 h-20 bg-[var(--portfolio-brown)] opacity-6" />
 
-        {/* Additional decorative elements */}
         <div className="hero-geometry hero-float absolute top-1/5 right-1/6 w-6 h-6 bg-[var(--portfolio-gold)] opacity-15 rotate-45" />
         <div className="hero-geometry hero-float absolute bottom-1/5 right-1/4 w-8 h-8 bg-[var(--portfolio-brown)] opacity-12 rotate-12" />
       </div>
 
-      {/* Main Content */}
       <div className="relative h-full flex items-center">
-        {/* Enhanced vertical accent line */}
         <div className="absolute left-28 top-1/2 -translate-y-1/2 w-1 h-40 bg-gradient-to-b from-[var(--portfolio-gold)] via-amber-500 to-orange-400 shadow-lg" />
 
         <div className="pl-40 max-w-4xl">
-          {/* Enhanced name with GSAP animations */}
           <div ref={nameRef} className="mb-8 relative">
             <h1 className="font-serif font-bold leading-none">
               <div
@@ -142,16 +127,13 @@ export default function HeroSection() {
             </h1>
           </div>
 
-          {/* Content with GSAP animations */}
           <div ref={contentRef}>
-            {/* Enhanced tagline */}
             <div className="mb-8">
               <p className="text-2xl text-[var(--portfolio-brown)] font-semibold tracking-wide">
                 Software Engineer & ECE Student @ Texas A&M
               </p>
             </div>
 
-            {/* Enhanced description */}
             <div className="mb-10 max-w-2xl">
               <p className="text-lg text-gray-700 leading-relaxed font-medium">
                 Hey I&apos;m Matthew, a sophomore at Texas A&M interested in software, machine learning, and energy. Feel free to contact me at matthewtershi@tamu.edu!
@@ -159,7 +141,6 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Enhanced social media icons with GSAP hover effects */}
           <div ref={socialRef} className="flex space-x-5">
             {[
               { icon: Mail, href: "mailto:matthewtershi@gmail.com", label: "Email", color: "bg-amber-500/80 hover:bg-amber-500" },
@@ -206,7 +187,6 @@ export default function HeroSection() {
             ))}
           </div>
 
-          {/* Subtle decorative element */}
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-[var(--portfolio-gold)] to-transparent opacity-50" />
         </div>
       </div>

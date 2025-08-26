@@ -16,16 +16,13 @@ export default function ContactSection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Create mailto link with form data
     const subject = encodeURIComponent("Portfolio Contact from " + formData.name)
     const body = encodeURIComponent(
       `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
     )
     
-    // Open email client with pre-filled data
     window.location.href = `mailto:matthewtershi@gmail.com?subject=${subject}&body=${body}`
     
-    // Reset form
     setFormData({ name: "", email: "", message: "" })
   }
 
@@ -37,7 +34,6 @@ export default function ContactSection() {
   }
 
   const scrollToStart = () => {
-    // Scroll horizontally to the first section (hero)
     const container = document.querySelector('[ref="containerRef"]') || 
                      document.querySelector('.flex.h-full.overflow-x-auto') || 
                      document.querySelector('.flex.h-full.overflow-x-auto.overflow-y-hidden') ||
@@ -45,16 +41,13 @@ export default function ContactSection() {
     if (container && 'scrollTo' in container) {
       container.scrollTo({ left: 0, behavior: "smooth" })
     } else {
-      // Fallback for horizontal scrolling
       window.scrollTo({ left: 0, behavior: "smooth" })
     }
   }
 
   return (
     <div className="h-full bg-[var(--portfolio-dark)] text-white flex items-center justify-center relative overflow-hidden px-4">
-      {/* Two Column Layout */}
       <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-12 relative z-10">
-        {/* Contact Form - Left Side */}
         <div className="flex-1 max-w-lg text-center lg:text-left">
         <p className="text-amber-400 text-sm font-bold tracking-[0.2em] uppercase mb-6 relative inline-block">
           GET IN TOUCH
@@ -133,13 +126,11 @@ export default function ContactSection() {
         </form>
       </div>
 
-      {/* GitHub Stats - Right Side */}
       <div className="flex-1 flex justify-center lg:justify-end">
         <GitHubStats />
       </div>
     </div>
 
-      {/* Back to Start Button */}
       <button
         onClick={scrollToStart}
         className="absolute bottom-8 left-8 flex items-center space-x-3 text-amber-400 hover:text-amber-300 transition-all duration-300 group z-20"
@@ -148,7 +139,6 @@ export default function ContactSection() {
         <span className="font-medium">Back to Start</span>
       </button>
 
-      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-1/4 w-32 h-32 border border-amber-400 rotate-45" />
         <div className="absolute bottom-1/4 right-1/4 w-24 h-24 border border-amber-400 rotate-12" />

@@ -137,7 +137,40 @@
   }
 }
 
-/* Added custom styles for horizontal scrolling and portfolio-specific elements */
+.loading-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+body {
+  overflow-x: hidden;
+}
+
+* {
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.horizontal-scroll-container {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-dot, .bottom-dot {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-progress {
+  transition: height 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .horizontal-scroll-container {
   scrollbar-width: none;
   -ms-overflow-style: none;

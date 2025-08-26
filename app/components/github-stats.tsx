@@ -75,13 +75,11 @@ export default function GitHubStats() {
       const repoData: Repository[] = await response.json()
       setRepos(repoData)
 
-      // Calculate language statistics by lines of code
       const languageLines: Record<string, number> = {}
       let totalLinesOfCode = 0
 
       repoData.forEach((repo) => {
         const language = repo.language || "Other"
-        // GitHub size is in KB, roughly 1 KB = 50 lines of code
         const estimatedLines = repo.size * 50
         languageLines[language] = (languageLines[language] || 0) + estimatedLines
         totalLinesOfCode += estimatedLines
@@ -97,7 +95,7 @@ export default function GitHubStats() {
           color: LANGUAGE_COLORS[name] || LANGUAGE_COLORS.Other,
         }))
         .sort((a, b) => b.linesOfCode - a.linesOfCode)
-        .slice(0, 5) // Top 5 languages
+        .slice(0, 5)
 
       setLanguageStats(stats)
       setTotalStats({
@@ -145,7 +143,6 @@ export default function GitHubStats() {
         </div>
       </div>
 
-      {/* Simple Statistics - 2 cards */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="text-center p-4 bg-gradient-to-br from-amber-400/15 to-orange-400/15 rounded-xl border border-amber-400/25">
           <div className="flex items-center justify-center gap-2 mb-2">
@@ -163,7 +160,6 @@ export default function GitHubStats() {
         </div>
       </div>
 
-      {/* Top Languages by Lines of Code */}
       <div>
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="h-5 w-5 text-amber-400" />
