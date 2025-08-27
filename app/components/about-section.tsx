@@ -27,6 +27,10 @@ interface CardProps {
   onCloseExpanded: (e: React.MouseEvent) => void
 }
 
+interface AboutSectionProps {
+  shouldAnimate?: boolean
+}
+
 const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -176,33 +180,9 @@ const InfoCard: React.FC<CardProps> = ({
   )
 }
 
-export default function AboutSection() {
+export default function AboutSection({ shouldAnimate = false }: AboutSectionProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const [expandedElement, setExpandedElement] = useState<string | null>(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        ".about-header",
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", delay: 0.2 },
-      )
-
-      gsap.fromTo(
-        ".flow-element",
-        { opacity: 0, x: 50, rotation: 2 },
-        { opacity: 1, x: 0, rotation: 0, duration: 0.8, stagger: 0.15, delay: 0.4, ease: "power2.out" },
-      )
-
-      gsap.fromTo(
-        ".skill-bubble",
-        { opacity: 0, scale: 0.8, y: 20 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.6, stagger: 0.08, delay: 0.8, ease: "back.out(1.7)" },
-      )
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -250,7 +230,7 @@ export default function AboutSection() {
   return (
     <div
       ref={sectionRef}
-      className="relative h-full bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 overflow-hidden"
+      className="relative h-full bg-orange-50 overflow-hidden"
     >
       <div className="absolute inset-0 opacity-50">
         <div className="absolute top-20 left-20 w-32 h-32 bg-amber-400 rounded-full blur-3xl animate-pulse" />
@@ -325,7 +305,7 @@ export default function AboutSection() {
                 bgColor="bg-gradient-to-br from-blue-50/95 to-cyan-50/95"
                 borderColor="border-blue-200/40"
                 transform="-rotate-1"
-                position={{ top: "top-40", left: "left-48" }}
+                position={{ top: "top-40", left: "left-44" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
@@ -373,8 +353,7 @@ export default function AboutSection() {
                 {expandedElement === "philosophy" && (
                   <div className="mt-4 pt-4 border-t border-yellow-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Genuine passion and persistence create opportunities. 
-                      The world responds to authentic commitment.
+                      The world responds to authentic commitment
                     </p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -413,7 +392,7 @@ export default function AboutSection() {
                 bgColor="bg-gradient-to-br from-purple-50/95 to-violet-50/95"
                 borderColor="border-purple-200/40"
                 transform="rotate-1"
-                position={{ top: "top-80", left: "left-4" }}
+                position={{ top: "top-80", left: "left-0" }}
                 width="w-80"
                 expandedElement={expandedElement}
                 onElementClick={handleElementClick}
@@ -529,7 +508,7 @@ export default function AboutSection() {
                       Everyone has their quirks. Here are a few of mine.
                     </p>
                     <div className="space-y-2">
-                      {["Can&apos;t read cursive", "Scared of colored pencils", "Self conscious about keychains", "Don&apos;t touch my mechanical pencils"].map((fact) => (
+                      {["Can't read cursive", "Scared of colored pencils", "Self conscious about keychains", "Don't touch my mechanical pencils"].map((fact) => (
                         <div key={fact} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-orange-500 rounded-full" />
                           {fact}
@@ -557,12 +536,12 @@ export default function AboutSection() {
               >
                 <div className="flex flex-wrap gap-2 mb-4">
                   {["Git", "Docker", "AWS", "Vercel"].map((tool) => (
-                    <span
-                      key={tool}
-                      className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
-                    >
-                      {tool}
-                    </span>
+                                         <span
+                       key={tool}
+                       className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
+                     >
+                       {tool}
+                     </span>
                   ))}
                 </div>
                 {expandedElement === "tools" && (
@@ -614,14 +593,14 @@ export default function AboutSection() {
                 onCloseExpanded={handleCloseExpanded}
               >
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {["Next.js 14", "TypeScript", "React", "Tailwind CSS"].map((skill) => (
-                    <span
-                      key={skill}
-                      className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
-                    >
-                      {skill}
-                    </span>
-                  ))}
+                                     {["Next.js 14", "TypeScript", "React", "Tailwind CSS"].map((skill) => (
+                     <span
+                       key={skill}
+                       className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
+                     >
+                       {skill}
+                     </span>
+                   ))}
                 </div>
                 {expandedElement === "frontend" && (
                   <div className="mt-4 pt-4 border-t border-blue-200">
@@ -669,19 +648,19 @@ export default function AboutSection() {
                 onCloseExpanded={handleCloseExpanded}
               >
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {["Django", "Node.js", "ASP.NET Core", "tRPC"].map((skill) => (
-                    <span
-                      key={skill}
-                      className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
-                    >
-                      {skill}
-                    </span>
-                  ))}
+                                     {["Django", "Node.js", "ASP.NET Core", "tRPC"].map((skill) => (
+                     <span
+                       key={skill}
+                       className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
+                     >
+                       {skill}
+                     </span>
+                   ))}
                 </div>
                 {expandedElement === "backend" && (
                   <div className="mt-4 pt-4 border-t border-green-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Building scalable APIs and microservices with focus on performance and sustainability.
+                      Building scalable APIs and microservices
                     </p>
                     <div className="space-y-2">
                       {["Microservices", "Django & FastAPI", "C# & .NET", "Docker Containers"].map((skill) => (
@@ -711,19 +690,19 @@ export default function AboutSection() {
                 onCloseExpanded={handleCloseExpanded}
               >
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {["TensorFlow", "PyTorch", "Hugging Face"].map((skill) => (
-                    <span
-                      key={skill}
-                      className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
-                    >
-                      {skill}
-                    </span>
-                  ))}
+                                     {["TensorFlow", "PyTorch", "Hugging Face"].map((skill) => (
+                     <span
+                       key={skill}
+                       className="skill-bubble px-3 py-1 bg-white/70 rounded-full text-sm font-medium text-gray-700"
+                     >
+                       {skill}
+                     </span>
+                   ))}
                 </div>
                 {expandedElement === "aiMl" && (
                   <div className="mt-4 pt-4 border-t border-purple-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Exploring the latest advancements in AI and Machine Learning.
+                      Learning as much as I can about model engineering and enhancement.
                     </p>
                     <div className="space-y-2">
                       {["Azure ML", "Feature Engineering", "Model Deployment"].map((skill) => (

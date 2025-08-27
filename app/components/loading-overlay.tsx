@@ -2,16 +2,21 @@
 
 import { useEffect, useState } from "react"
 
-export default function LoadingOverlay() {
+interface LoadingOverlayProps {
+  onLoadingComplete: () => void
+}
+
+export default function LoadingOverlay({ onLoadingComplete }: LoadingOverlayProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false)
+      onLoadingComplete()
     }, 800)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [onLoadingComplete])
 
   if (!isLoading) return null
 

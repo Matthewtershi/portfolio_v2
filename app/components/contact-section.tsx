@@ -2,16 +2,59 @@
 
 import type React from "react"
 import { ArrowLeft, Send } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
+import { gsap } from "gsap"
 import GitHubStats from "./github-stats"
 
-export default function ContactSection() {
+interface ContactSectionProps {
+  shouldAnimate?: boolean
+}
+
+export default function ContactSection({ shouldAnimate = false }: ContactSectionProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
   })
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Always set initial states to prevent flash
+      gsap.set(".contact-header", { opacity: 0, y: 30 })
+      gsap.set(".contact-form", { opacity: 0, y: 20 })
+      gsap.set(".contact-stats", { opacity: 0, x: 30 })
+
+      // Only animate if shouldAnimate is true
+      if (shouldAnimate) {
+        const tl = gsap.timeline({ delay: 0.1 })
+
+        tl.to(".contact-header", {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: "power2.out",
+        })
+
+        tl.to(".contact-form", {
+          opacity: 1,
+          y: 0,
+          duration: 0.4,
+          ease: "power2.out",
+        }, "-=0.3")
+
+        tl.to(".contact-stats", {
+          opacity: 1,
+          x: 0,
+          duration: 0.5,
+          ease: "power2.out",
+        }, "-=0.2")
+      }
+    }, sectionRef)
+
+    return () => ctx.revert()
+  }, [shouldAnimate])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,19 +89,21 @@ export default function ContactSection() {
   }
 
   return (
-    <div className="h-full bg-[var(--portfolio-dark)] text-white flex items-center justify-center relative overflow-hidden px-4">
+    <div ref={sectionRef} className="h-full bg-[var(--portfolio-dark)] text-white flex items-center justify-center relative overflow-hidden px-4">
       <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-12 relative z-10">
         <div className="flex-1 max-w-lg text-center lg:text-left">
-        <p className="text-amber-400 text-sm font-bold tracking-[0.2em] uppercase mb-6 relative inline-block">
-          GET IN TOUCH
-          <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-amber-400" />
-        </p>
+        <div className="contact-header opacity-0 translate-y-8">
+          <p className="text-amber-400 text-sm font-bold tracking-[0.2em] uppercase mb-6 relative inline-block">
+            GET IN TOUCH
+            <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-amber-400" />
+          </p>
 
-        <h2 className="text-5xl lg:text-6xl font-serif font-bold mb-16 text-white">
-          CONTACT<span className="text-amber-400">.</span>
-        </h2>
+          <h2 className="text-5xl lg:text-6xl font-serif font-bold mb-16 text-white">
+            CONTACT<span className="text-amber-400">.</span>
+          </h2>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-10">
+        <form onSubmit={handleSubmit} className="contact-form space-y-10 opacity-0 translate-y-5">
           <div className="relative">
             <input
               type="text"
@@ -126,8 +171,10 @@ export default function ContactSection() {
         </form>
       </div>
 
-      <div className="flex-1 flex justify-center lg:justify-end">
-        <GitHubStats />
+      <div className="flex-1 flex justify-center lg:justify-end min-w-0">
+        <div className="contact-stats opacity-0 translate-x-8 w-full max-w-2xl">
+          <GitHubStats />
+        </div>
       </div>
     </div>
 

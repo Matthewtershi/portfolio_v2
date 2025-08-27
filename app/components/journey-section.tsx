@@ -15,6 +15,10 @@ interface Experience {
   position: "top" | "bottom"
 }
 
+interface JourneySectionProps {
+  shouldAnimate?: boolean
+}
+
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger)
 }
@@ -85,69 +89,75 @@ const skills = [
   { name: "Sustainability", icon: Leaf },
 ]
 
-export default function JourneySection() {
+export default function JourneySection({ shouldAnimate = false }: JourneySectionProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const timelineRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // Always set initial states to prevent flash
       gsap.set(".journey-header", { opacity: 0, y: 30 })
       gsap.set(".skill-pill", { opacity: 0, y: 20, scale: 0.8 })
       gsap.set(".timeline-card", { opacity: 0, y: 50, scale: 0.9 })
-      gsap.set(".timeline-line", { scaleX: 0, transformOrigin: "left center" })
+      gsap.set(".timeline-line", { clipPath: "inset(0 100% 0 0)" })
 
-      const tl = gsap.timeline({ delay: 0.3 })
+      // Only animate if shouldAnimate is true
+      if (shouldAnimate) {
+        const tl = gsap.timeline({ delay: 0.1 })
 
-      tl.to(".journey-header", {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: "power2.out",
-      })
-
-      tl.to(
-        ".skill-pill",
-        {
+        tl.to(".journey-header", {
           opacity: 1,
           y: 0,
-          scale: 1,
-          duration: 0.5,
-          stagger: 0.1,
-          ease: "back.out(1.7)",
-        },
-        "-=0.4",
-      )
-
-      tl.to(
-        ".timeline-line",
-        {
-          scaleX: 1,
-          duration: 1.5,
-          ease: "power2.out",
-        },
-        "-=0.2",
-      )
-
-      tl.to(
-        ".timeline-card",
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
           duration: 0.6,
-          stagger: 0.15,
           ease: "power2.out",
-        },
-        "-=0.8",
-      )
+        })
+
+        tl.to(
+          ".skill-pill",
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.4,
+            stagger: 0.08,
+            ease: "back.out(1.7)",
+          },
+          "-=0.2",
+        )
+
+        // Animate timeline line with a drawing effect using clip-path
+        tl.to(
+          ".timeline-line",
+          {
+            clipPath: "inset(0 0% 0 0)",
+            duration: 1.2,
+            ease: "power2.out",
+          },
+          "-=0.1",
+        )
+
+        // Animate timeline cards with a staggered reveal effect
+        tl.to(
+          ".timeline-card",
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.6,
+            stagger: 0.15,
+            ease: "back.out(1.4)",
+          },
+          "-=0.8", // Start cards animation while line is still drawing
+        )
+      }
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [shouldAnimate])
 
   return (
-    <div ref={sectionRef} className="h-full bg-gradient-to-br from-amber-50 to-orange-50 flex flex-col">
+    <div ref={sectionRef} className="h-full bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex flex-col">
       <div ref={headerRef} className="px-16 py-16">
         <div className="journey-header">
           <h2 className="text-4xl lg:text-5xl font-serif font-bold text-[var(--portfolio-brown)] mb-4">My Journey</h2>
@@ -196,17 +206,10 @@ export default function JourneySection() {
             className="relative h-full py-20"
             style={{ width: `${experiences.length * 400 + 200}px` }}
           >
-             <div className="timeline-line absolute top-1/2 left-0 right-0 h-2 bg-gradient-to-r from-[var(--portfolio-gold)] via-amber-400 to-orange-400 transform -translate-y-1/2 rounded-full shadow-sm" />
+             <div className="timeline-line absolute top-1/2 left-0 right-0 h-2 bg-gradient-to-r from-[var(--portfolio-gold)] via-amber-400 to-orange-400 transform -translate-y-1/2 rounded-full shadow-sm">
+              <div className="h-full w-full bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 opacity-20 animate-pulse" />
+            </div>
              
-             {experiences.map((exp, index) => {
-               const leftPosition = 100 + index * 400
-               return (
-                 <div key={`dash-${index}`} className="absolute top-1/2 transform -translate-y-1/2" style={{ left: `${leftPosition}px` }}>
-                   <div className="w-8 h-2 bg-white rounded-full shadow-sm border border-amber-200" />
-                 </div>
-               )
-             })}
-
             <div className="relative flex items-center h-full">
               {experiences.map((exp, index) => {
                 const Icon = exp.icon
@@ -279,22 +282,6 @@ export default function JourneySection() {
                 )
               })}
             </div>
-
-            <div className="absolute top-1/2 left-4 w-4 h-4 bg-[var(--portfolio-gold)] rounded-full border-2 border-white shadow-lg transform -translate-y-1/2" />
-            <div className="absolute top-1/2 right-4 w-4 h-4 bg-orange-400 rounded-full border-2 border-white shadow-lg transform -translate-y-1/2" />
-
-            {experiences.map((exp, index) => {
-              const leftPosition = 100 + index * 400
-              return (
-                <div key={`year-${index}`} className="absolute" style={{ left: `${leftPosition}px` }}>
-                  <div className="absolute top-1/2 transform -translate-y-1/2 -translate-x-1/2 mt-8">
-                    <div className="bg-white px-3 py-1 rounded-full shadow-md border border-amber-200">
-                      <span className="text-sm font-bold text-[var(--portfolio-brown)]">{exp.year}</span>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
           </div>
         </div>
       </div>

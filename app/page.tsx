@@ -22,11 +22,77 @@ if (typeof window !== "undefined") {
 
 export default function Portfolio() {
   const [currentSection, setCurrentSection] = useState(0)
+  const [isHeroReady, setIsHeroReady] = useState(false)
+  const [isAboutReady, setIsAboutReady] = useState(false)
+  const [isJourneyReady, setIsJourneyReady] = useState(false)
+  const [isContactReady, setIsContactReady] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const isScrollingRef = useRef(false)
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const sections = ["Home", "About","Journey", "Contact"]
+
+  const handleLoadingComplete = () => {
+    // Small delay to ensure smooth transition
+    setTimeout(() => {
+      setIsHeroReady(true)
+    }, 100)
+  }
+
+  // Function to trigger section animations based on scroll position
+  const triggerSectionAnimation = (sectionIndex: number) => {
+    switch (sectionIndex) {
+      case 0: // Hero
+        if (!isHeroReady) setIsHeroReady(true)
+        break
+      case 1: // About
+        if (!isAboutReady) setIsAboutReady(true)
+        break
+      case 2: // Journey
+        if (!isJourneyReady) setIsJourneyReady(true)
+        break
+      case 3: // Contact
+        if (!isContactReady) setIsContactReady(true)
+        break
+    }
+  }
+
+  // Enhanced scroll detection for triggering animations
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const handleScrollForAnimations = () => {
+      const scrollLeft = container.scrollLeft
+      const sectionWidth = container.clientWidth
+      
+      // Check which sections should be animated based on scroll position
+      const currentScrollPosition = scrollLeft + sectionWidth * 0.3 // Trigger when 30% into section
+      
+      // Hero section (always ready after loading)
+      if (scrollLeft < sectionWidth * 0.5 && !isHeroReady) {
+        setIsHeroReady(true)
+      }
+      
+      // About section
+      if (scrollLeft >= sectionWidth * 0.5 && scrollLeft < sectionWidth * 1.5 && !isAboutReady) {
+        setIsAboutReady(true)
+      }
+      
+      // Journey section
+      if (scrollLeft >= sectionWidth * 1.5 && scrollLeft < sectionWidth * 2.5 && !isJourneyReady) {
+        setIsJourneyReady(true)
+      }
+      
+      // Contact section
+      if (scrollLeft >= sectionWidth * 2.5 && !isContactReady) {
+        setIsContactReady(true)
+      }
+    }
+
+    container.addEventListener("scroll", handleScrollForAnimations)
+    return () => container.removeEventListener("scroll", handleScrollForAnimations)
+  }, [isHeroReady, isAboutReady, isJourneyReady, isContactReady])
 
   const applyMagneticScroll = () => {
     if (containerRef.current && !isScrollingRef.current) {
@@ -43,7 +109,7 @@ export default function Portfolio() {
 
       if (isMainSectionBoundary) {
         const distanceFromSection = Math.abs(currentSectionIndex - nearestSectionIndex)
-        const threshold = 0.35 
+        const threshold = 0.25 // Reduced from 0.35 to make it less aggressive
 
         if (distanceFromSection < threshold && distanceFromSection > 0.05) {
           let targetScrollLeft: number
@@ -144,6 +210,8 @@ export default function Portfolio() {
            
            if (newSection !== currentSection && newSection >= 0 && newSection < sections.length) {
              setCurrentSection(newSection)
+             // Trigger animation for the new section
+             triggerSectionAnimation(newSection)
            }
          }, 50)
       }
@@ -163,13 +231,17 @@ export default function Portfolio() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(".nav-item", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.6, stagger: 0.1, delay: 0.5 })
-      gsap.fromTo(".bottom-nav", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, delay: 0.8 })
-      gsap.fromTo(".copyright", { opacity: 0 }, { opacity: 1, duration: 0.6, delay: 1 })
+      // Only animate navigation when hero section is ready
+      if (isHeroReady) {
+        // Animate navigation elements with entrance effects
+        gsap.fromTo(".nav-item", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.4, stagger: 0.08, delay: 0.3, ease: "power2.out" })
+        gsap.fromTo(".bottom-nav", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, delay: 0.5, ease: "power2.out" })
+        gsap.fromTo(".copyright", { opacity: 0 }, { opacity: 1, duration: 0.4, delay: 0.7, ease: "power2.out" })
+      }
     })
 
     return () => ctx.revert()
-  }, [])
+  }, [isHeroReady])
 
   const navigateToSection = (index: number) => {
     if (containerRef.current) {
@@ -242,9 +314,9 @@ export default function Portfolio() {
 
   return (
     <>
-      <LoadingOverlay />
+      <LoadingOverlay onLoadingComplete={handleLoadingComplete} />
       <div className="relative h-screen overflow-hidden">
-      <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col space-y-6">
+              <nav className="fixed left-6 top-1/2 -translate-y-1/2 z-50 flex flex-col space-y-6 opacity-0 -translate-x-5">
         {sections.map((section, index) => (
           <button
             key={section}
@@ -287,21 +359,21 @@ export default function Portfolio() {
         </div>
       </div>
 
-      <nav className="bottom-nav fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex space-x-4">
-        {sections.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => navigateToSection(index)}
-            className={`bottom-dot bottom-dot-${index} w-3 h-3 rounded-full transition-all duration-300 ${
-              currentSection === index
-                ? "bg-gradient-to-r from-[var(--portfolio-gold)] to-amber-500"
-                : "bg-gray-400 hover:bg-[var(--portfolio-brown)]"
-            }`}
-          />
-        ))}
-      </nav>
+        <nav className="bottom-nav fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex space-x-4 opacity-0 translate-y-5">
+          {sections.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => navigateToSection(index)}
+              className={`bottom-dot bottom-dot-${index} w-3 h-3 rounded-full transition-all duration-300 ${
+                currentSection === index
+                  ? "bg-gradient-to-r from-[var(--portfolio-gold)] to-amber-500"
+                  : "bg-gray-400 hover:bg-[var(--portfolio-brown)]"
+              }`}
+            />
+          ))}
+        </nav>
 
-      <div className="copyright fixed bottom-4 right-6 z-50 text-sm text-gray-500">© 2024 Matthew Shi</div>
+        <div className="copyright fixed bottom-4 right-6 z-50 text-sm text-gray-500 opacity-0">© 2025 Matthew Shi</div>
 
       <div
         ref={containerRef}
@@ -319,22 +391,22 @@ export default function Portfolio() {
 
         {/* Hero Section */}
         <div className="min-w-full h-full flex-shrink-0">
-          <HeroSection />
+          <HeroSection shouldAnimate={isHeroReady} />
         </div>
 
         {/* About Section */}
         <div className="min-w-full h-full flex-shrink-0">
-          <AboutSection />
+          <AboutSection shouldAnimate={isAboutReady} />
         </div>
 
         {/* Journey Section */}
         <div className="min-w-full h-full flex-shrink-0">
-          <JourneySection />
+          <JourneySection shouldAnimate={isJourneyReady} />
         </div>
 
         {/* Contact Section */}
         <div className="min-w-full h-full flex-shrink-0">
-          <ContactSection />
+          <ContactSection shouldAnimate={isContactReady} />
         </div>
       </div>
     </div>

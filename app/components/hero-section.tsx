@@ -4,7 +4,11 @@ import { Mail, Linkedin, Github, Instagram } from "lucide-react"
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  shouldAnimate?: boolean
+}
+
+export default function HeroSection({ shouldAnimate = false }: HeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -13,9 +17,10 @@ export default function HeroSection() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      // Always set initial states to prevent flash - now matching CSS classes
       gsap.set([nameRef.current, contentRef.current, socialRef.current], {
         opacity: 0,
-        x: -50,
+        x: -48, // -translate-x-12 = -48px
       })
 
       gsap.set(".hero-geometry", {
@@ -24,69 +29,80 @@ export default function HeroSection() {
         rotation: 0,
       })
 
-      const tl = gsap.timeline({ delay: 0.5 })
+      // Only animate if shouldAnimate is true
+      if (shouldAnimate) {
+        const tl = gsap.timeline({ delay: 0.3 })
 
-      tl.to(".hero-geometry", {
-        opacity: 1,
-        scale: 1,
-        rotation: (index) => index * 15,
-        duration: 1,
-        stagger: 0.1,
-        ease: "back.out(1.7)",
-      })
-
-      tl.to(
-        nameRef.current,
-        {
+        // Animate sidebar line first
+        tl.to(".hero-sidebar-line", {
           opacity: 1,
-          x: 0,
-          duration: 1.2,
-          ease: "power3.out",
-        },
-        "-=0.5",
-      )
-
-      tl.to(
-        contentRef.current,
-        {
-          opacity: 1,
-          x: 0,
-          duration: 0.8,
-          ease: "power2.out",
-        },
-        "-=0.6",
-      )
-
-      tl.to(
-        socialRef.current,
-        {
-          opacity: 1,
-          x: 0,
+          height: "10rem", // h-40 = 10rem
           duration: 0.6,
           ease: "power2.out",
-        },
-        "-=0.4",
-      )
+        })
 
-      gsap.to(".hero-float", {
-        y: -10,
-        duration: 2,
-        ease: "power1.inOut",
-        yoyo: true,
-        repeat: -1,
-        stagger: 0.2,
-      })
+        tl.to(".hero-geometry", {
+          opacity: 1,
+          scale: 1,
+          rotation: (index) => index * 15,
+          duration: 0.8,
+          stagger: 0.08,
+          ease: "back.out(1.7)",
+        }, "-=0.3")
 
-      gsap.to(".hero-rotate", {
-        rotation: "+=360",
-        duration: 20,
-        ease: "none",
-        repeat: -1,
-      })
+        tl.to(
+          nameRef.current,
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.8,
+            ease: "power3.out",
+          },
+          "-=0.5",
+        )
+
+        tl.to(
+          contentRef.current,
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.6,
+            ease: "power2.out",
+          },
+          "-=0.4",
+        )
+
+        tl.to(
+          socialRef.current,
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.5,
+            ease: "power2.out",
+          },
+          "-=0.3",
+        )
+
+        gsap.to(".hero-float", {
+          y: -10,
+          duration: 2,
+          ease: "power1.inOut",
+          yoyo: true,
+          repeat: -1,
+          stagger: 0.2,
+        })
+
+        gsap.to(".hero-rotate", {
+          rotation: "+=360",
+          duration: 20,
+          ease: "none",
+          repeat: -1,
+        })
+      }
     }, heroRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [shouldAnimate])
 
   return (
     <div ref={heroRef} className="relative h-full bg-[var(--portfolio-beige)] overflow-hidden">
@@ -107,10 +123,10 @@ export default function HeroSection() {
       </div>
 
       <div className="relative h-full flex items-center">
-        <div className="absolute left-28 top-1/2 -translate-y-1/2 w-1 h-40 bg-gradient-to-b from-[var(--portfolio-gold)] via-amber-500 to-orange-400 shadow-lg" />
+        <div className="hero-sidebar-line absolute left-28 top-1/2 -translate-y-1/2 w-1 h-40 bg-gradient-to-b from-[var(--portfolio-gold)] via-amber-500 to-orange-400 shadow-lg transform-gpu" />
 
         <div className="pl-40 max-w-4xl">
-          <div ref={nameRef} className="mb-8 relative">
+          <div ref={nameRef} className="hero-section-content mb-8 relative opacity-0 -translate-x-12">
             <h1 className="font-serif font-bold leading-none">
               <div
                 className="text-8xl lg:text-9xl bg-gradient-to-r from-[var(--portfolio-brown)] via-amber-700 to-[var(--portfolio-gold)] bg-clip-text text-transparent transform -rotate-1 origin-left mb-2 hover:scale-105 transition-transform duration-300 cursor-default"
@@ -127,7 +143,7 @@ export default function HeroSection() {
             </h1>
           </div>
 
-          <div ref={contentRef}>
+          <div ref={contentRef} className="hero-section-content opacity-0 -translate-x-12">
             <div className="mb-8">
               <p className="text-2xl text-[var(--portfolio-brown)] font-semibold tracking-wide">
                 Software Engineer & ECE Student @ Texas A&M
@@ -141,7 +157,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div ref={socialRef} className="flex space-x-5">
+          <div ref={socialRef} className="hero-section-content flex space-x-5 opacity-0 -translate-x-12">
             {[
               { icon: Mail, href: "mailto:matthewtershi@gmail.com", label: "Email", color: "bg-amber-500/80 hover:bg-amber-500" },
               { icon: Linkedin, href: "https://www.linkedin.com/in/matthew-shi-a2376b239/", label: "LinkedIn", color: "bg-blue-600/80 hover:bg-blue-600" },
