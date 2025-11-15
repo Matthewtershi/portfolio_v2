@@ -36,13 +36,21 @@ const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Only create audio element on client side
     const audioElement = new Audio('/audio/calling-after-me.mp3')
+    
+    const handleError = () => {
+      setError('Failed to load audio file')
+      console.error('Audio loading error:', audioElement.error)
+    }
+    
+    audioElement.addEventListener('error', handleError)
     setAudio(audioElement)
     
     return () => {
+      audioElement.removeEventListener('error', handleError)
       if (audioElement) {
         audioElement.pause()
         audioElement.currentTime = 0
@@ -53,47 +61,65 @@ const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
   useEffect(() => {
     if (!audio) return
     
-    const handleEnded = () => setIsPlaying(false)
-    const handleLoadedMetadata = () => setDuration(audio.duration)
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
+    const handleEnded = () => {
+      setIsPlaying(false)
+      setCurrentTime(0)
+    }
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration)
+    }
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime)
+    }
+    const handlePlay = () => setIsPlaying(true)
+    const handlePause = () => setIsPlaying(false)
     
     audio.addEventListener('ended', handleEnded)
     audio.addEventListener('loadedmetadata', handleLoadedMetadata)
     audio.addEventListener('timeupdate', handleTimeUpdate)
+    audio.addEventListener('play', handlePlay)
+    audio.addEventListener('pause', handlePause)
     
     return () => {
       audio.removeEventListener('ended', handleEnded)
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
       audio.removeEventListener('timeupdate', handleTimeUpdate)
+      audio.removeEventListener('play', handlePlay)
+      audio.removeEventListener('pause', handlePause)
     }
   }, [audio])
 
+  // effect for playing audio when card is expanded
   useEffect(() => {
-    if (!audio || !isExpanded) return
+    if (!audio) return
     
-    if (isPlaying) {
+    if (!isExpanded && isPlaying) {
       audio.pause()
-      audio.currentTime = 0
       setIsPlaying(false)
     }
   }, [isExpanded, audio, isPlaying])
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (!audio) return
     
-    if (isPlaying) {
-      audio.pause()
-      setIsPlaying(false)
-    } else {
-      if (isExpanded) {
-        audio.play()
+    try {
+      if (isPlaying) {
+        audio.pause()
+        setIsPlaying(false)
+      } else {
+        await audio.play()
         setIsPlaying(true)
+        setError(null)
       }
+    } catch (err) {
+      console.error('Error playing audio:', err)
+      setError('Could not play audio. Please try again.')
+      setIsPlaying(false)
     }
   }
 
-
   const formatTime = (time: number) => {
+    if (isNaN(time)) return '0:00'
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
@@ -101,13 +127,17 @@ const AudioPlayer: React.FC<{ isExpanded: boolean }> = ({ isExpanded }) => {
 
   return (
     <div className="mt-3">
+      {error && (
+        <div className="text-xs text-red-500 mb-2">{error}</div>
+      )}
       <div className="flex items-center gap-3 mb-2">
         <button
           onClick={(e) => {
             e.stopPropagation()
             togglePlay()
           }}
-          className="flex items-center justify-center w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full text-white transition-colors shadow-md"
+          disabled={!isExpanded}
+          className="flex items-center justify-center w-12 h-12 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-full text-white transition-colors shadow-md"
         >
           {isPlaying ? (
             <div className="w-5 h-5 flex items-center justify-center">
@@ -255,7 +285,7 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
           <div className="journey-header">
             <h2 className="text-4xl lg:text-5xl font-serif font-bold text-[var(--portfolio-brown)] mb-4">About Me</h2>
             <p className="text-lg text-gray-600 font-medium">
-              Beyond coding, I&apos;m passionate about basketball, drawing, and the outdoors. Here&apos;s a little more about me inluding my tastes, interests, and skills!
+              I code, play basketball, draw sometimes, and enjoy the outdoors. Here&apos;s some random stuff about me.
             </p>
           </div>
         </div>
@@ -281,12 +311,12 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 onCloseExpanded={handleCloseExpanded}
               >
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  I&apos;m a student pursuing a career in software engineering
+                  Just a sophomore trying to build cool stuff
                 </p>
                 {expandedElement === "intro" && (
                   <div className="mt-4 pt-4 border-t border-amber-200">
                     <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                      I&apos;m passionate about turning ideas into solutions that people can utilize to improve theirs or others lives.
+                      I like making things that actually work. Still figuring it out as I go.
                     </p>
                   </div>
                 )}
@@ -316,7 +346,7 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 {expandedElement === "music" && (
                   <div className="mt-4 pt-4 border-t border-blue-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      My favorite music genres for late-nights, exercise, and just relaxing:
+                      What I&apos;m usually listening to:
                     </p>
                     <div className="space-y-2">
                       {["Indie-Pop", "Hip Hop", "C-Pop"].map((genre) => (
@@ -347,37 +377,21 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 onCloseExpanded={handleCloseExpanded}
               >
                 <p className="text-gray-700 leading-relaxed text-sm mb-4 italic">
-                                     &quot;When you truly want something, the whole universe conspires to help you achieve it.&quot;
+                  &quot;When you truly want something, the whole universe conspires to help you achieve it.&quot;
                 </p>
                 <p className="text-xs text-gray-500 text-right">— The Alchemist</p>
                 {expandedElement === "philosophy" && (
                   <div className="mt-4 pt-4 border-t border-yellow-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      The world responds to authentic commitment
+                      This quote hits different. If you actually care, things tend to work out.
                     </p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">What This Means</h5>
-                        <div className="space-y-2">
-                          {["Authentic Goals", "Persistent Action", "Open to Opportunities", "Trust the Process"].map((value) => (
-                            <div key={value} className="text-xs text-gray-600 flex items-center gap-2">
-                              <div className="w-2 h-2 bg-yellow-500 rounded-full" />
-                              {value}
-                            </div>
-                          ))}
+                    <div className="space-y-2">
+                      {["Actually trying (not just saying)", "Building stuff that matters", "Not being afraid to fail", "Keeping it real"].map((value) => (
+                        <div key={value} className="text-xs text-gray-600 flex items-center gap-2">
+                          <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                          {value}
                         </div>
-                      </div>
-                      <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">In Practice</h5>
-                        <div className="space-y-2">
-                          {["Daily Learning", "Building Projects", "Helping Others", "Staying Curious"].map((goal) => (
-                            <div key={goal} className="text-xs text-gray-600 flex items-center gap-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full" />
-                              {goal}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -403,10 +417,10 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 {expandedElement === "reading" && (
                   <div className="mt-4 pt-4 border-t border-purple-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      A book to question my perception of reality and challenge the illusions I have been living in.
+                      Encourages me to challenge everything.
                     </p>
                     <div className="space-y-2">
-                      <h5 className="text-sm font-medium text-gray-800">Recent Reads</h5>
+                      <h5 className="text-sm font-medium text-gray-800">Other books I&apos;ve read</h5>
                       {["Zero to One", "Person of Interest", "Tuesdays with Morrie"].map((book) => (
                         <div key={book} className="text-xs text-gray-600">
                           • {book}
@@ -432,15 +446,15 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
-                <p className="text-lg text-gray-700 font-medium mb-2"> Clash of Clans</p>
-                <p className="text-sm text-gray-600 mb-4"> Town Hall 15 max lab max heroes basically the goat </p>
+                <p className="text-lg text-gray-700 font-medium mb-2">Clash of Clans</p>
+                <p className="text-sm text-gray-600 mb-4"> max TH 15</p>
                 {expandedElement === "currentGame" && (
                   <div className="mt-4 pt-4 border-t border-orange-200">
                     <p className="text-gray-600 text-sm mb-3">
                       Other games:
                     </p>
                     <div className="space-y-2">
-                      {["Genshin Impact", "Minecraft", "Valorant"].map((genre) => (
+                      {["Genshin Impact", "Minecraft"].map((genre) => (
                         <div key={genre} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
                           {genre}
@@ -466,12 +480,12 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
-                <p className="text-lg text-gray-700 mb-2">Creative & Intellectual</p>
-                <p className="text-sm text-gray-600 mb-4">Music • Art • Reflection</p>
+                <p className="text-lg text-gray-700 mb-2">Things I do for fun</p>
+                <p className="text-sm text-gray-600 mb-4">Guitar • Drawing • Reading</p>
                 {expandedElement === "hobbies" && (
                   <div className="mt-4 pt-4 border-t border-green-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Finding things that keep me grounded (also off my phone)
+                      Stuff that gets me off my phone
                     </p>
                     <div className="space-y-2">
                       {["Acoustic Guitar", "Sketching", "Reading"].map((interest) => (
@@ -500,15 +514,15 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
-                <p className="text-lg text-gray-700 mb-2">Fun Facts</p>
-                <p className="text-sm text-gray-600 mb-4">Weird Stuff About Me</p>
+                <p className="text-lg text-gray-700 mb-2">Weird Facts</p>
+                <p className="text-sm text-gray-600 mb-4">I&apos;m a little unhinged</p>
                 {expandedElement === "randomFacts" && (
                   <div className="mt-4 pt-4 border-t border-orange-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Everyone has their quirks. Here are a few of mine.
+                      Here&apos;s some random stuff that makes me me:
                     </p>
                     <div className="space-y-2">
-                      {["Can't read cursive", "Scared of colored pencils", "Self conscious about keychains", "Don't touch my mechanical pencils"].map((fact) => (
+                      {["Can't read cursive", "Scared of colored pencils", "Self conscious about keychains", "Sensitive about mechanical pencils"].map((fact) => (
                         <div key={fact} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-orange-500 rounded-full" />
                           {fact}
@@ -547,7 +561,7 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 {expandedElement === "tools" && (
                   <div className="mt-4 pt-4 border-t border-indigo-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Essential tools and platforms that power my development workflow.
+                      Tools I use to actually get stuff done and deploy things
                     </p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -606,7 +620,7 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                   <div className="mt-4 pt-4 border-t border-blue-200">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">Advanced</h5>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">Pretty good at</h5>
                         <div className="space-y-2">
                           {["Server Components", "React Hooks", "CSS-in-JS", "State Management"].map((skill) => (
                             <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
@@ -617,7 +631,7 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                         </div>
                       </div>
                       <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">Additional</h5>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">Also mess with</h5>
                         <div className="space-y-2">
                           {["Framer Motion", "Three.js", "Zustand", "Svelte"].map((skill) => (
                             <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
@@ -660,7 +674,7 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 {expandedElement === "backend" && (
                   <div className="mt-4 pt-4 border-t border-green-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Building scalable APIs and microservices
+                      Making APIs that don&apos;t break (most of the time)
                     </p>
                     <div className="space-y-2">
                       {["Microservices", "Django & FastAPI", "C# & .NET", "Docker Containers"].map((skill) => (
@@ -702,10 +716,10 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 {expandedElement === "aiMl" && (
                   <div className="mt-4 pt-4 border-t border-purple-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Learning as much as I can about model engineering and enhancement.
+                      Trying to figure out what to do with AI
                     </p>
                     <div className="space-y-2">
-                      {["Azure ML", "Feature Engineering", "Model Deployment"].map((skill) => (
+                      {["Azure", "Feature Engineering", "AWS Agentcore"].map((skill) => (
                         <div key={skill} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full" />
                           {skill}
@@ -731,18 +745,15 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
               >
-                <p className="text-lg text-gray-700 mb-2">Continuous Growth</p>
-                <p className="text-sm text-gray-600 mb-4">Online Courses • Certifications</p>
+                <p className="text-lg text-gray-700 mb-2">Always trying to learn new things.</p>
+                <p className="text-sm text-gray-600 mb-4">Courses • Certs</p>
                 {expandedElement === "learning" && (
                   <div className="mt-4 pt-4 border-t border-teal-200">
-                    <p className="text-gray-600 text-sm mb-3">
-                      Always expanding my knowledge through structured learning and hands-on projects.
-                    </p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">Completed</h5>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">Done</h5>
                         <div className="space-y-2">
-                          {["Coursera (Deep Learning)", "Udemy (DeepRacer CV)", "AWS Certifications", "Open Source"].map((platform) => (
+                          {["Coursera (Deep Learning)", "Udemy (DeepRacer CV)", "AWS Cloud Practitioner", "Open Source"].map((platform) => (
                             <div key={platform} className="text-xs text-gray-600 flex items-center gap-2">
                               <div className="w-2 h-2 bg-teal-500 rounded-full" />
                               {platform}
@@ -751,7 +762,7 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                         </div>
                       </div>
                       <div>
-                        <h5 className="text-sm font-medium text-gray-800 mb-2">Roadmap</h5>
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">Want to learn</h5>
                         <div className="space-y-2">
                           {["Kubernetes", "Terraform Automation", "Cloud Architecture", "Security"].map((platform) => (
                             <div key={platform} className="text-xs text-gray-600 flex items-center gap-2">
@@ -781,15 +792,15 @@ export default function AboutSection({ shouldAnimate = false }: AboutSectionProp
                 onElementClick={handleElementClick}
                 onCloseExpanded={handleCloseExpanded}
             >
-                <p className="text-lg text-gray-700 mb-2">Building Connections</p>
+                <p className="text-lg text-gray-700 mb-2">Community</p>
                 <p className="text-sm text-gray-600 mb-4">Clubs • Hackathons</p>
                 {expandedElement === "community" && (
                   <div className="mt-4 pt-4 border-t border-rose-200">
                     <p className="text-gray-600 text-sm mb-3">
-                      Actively participating in the academic community and building meaningful relationships with my peers
+                      Hanging out with cool people and building things together
                     </p>
                     <div className="space-y-2">
-                      {["Tidal TAMU", "Workshops", "Hackathons", "Mentoring"].map((activity) => (
+                      {["tidalTAMU", "Workshops", "Hackathons", "Mentoring"].map((activity) => (
                         <div key={activity} className="text-xs text-gray-600 flex items-center gap-2">
                           <div className="w-2 h-2 bg-rose-500 rounded-full" />
                           {activity}
