@@ -1,210 +1,221 @@
 "use client"
 
-import { Mail, Linkedin, Github, Instagram } from "lucide-react"
+import { Mail, Linkedin, Github, Instagram, ChevronDown, ExternalLink } from "lucide-react"
+import { MagneticButton } from "@/app/components/ui/magnetic-button"
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
 
 interface HeroSectionProps {
   shouldAnimate?: boolean
+  isMobile?: boolean
 }
 
-export default function HeroSection({ shouldAnimate = false }: HeroSectionProps) {
+const CUBE_WORDS = ["Machine learning", "Optimization", "Anomaly detection"]
+
+export default function HeroSection({ shouldAnimate = false, isMobile = false }: HeroSectionProps) {
   const heroRef = useRef<HTMLDivElement>(null)
-  const nameRef = useRef<HTMLDivElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
-  const socialRef = useRef<HTMLDivElement>(null)
-  const geometryRef = useRef<HTMLDivElement>(null)
+  const taglineRef = useRef<HTMLParagraphElement>(null)
+  const nameRef = useRef<HTMLHeadingElement>(null)
+  const subtitleRef = useRef<HTMLDivElement>(null)
+  const cubeRef = useRef<HTMLDivElement>(null)
+  const cubeRotatorRef = useRef<HTMLDivElement>(null)
+  const expandedRef = useRef<HTMLSpanElement>(null)
+  const ctasRef = useRef<HTMLDivElement>(null)
+  const emailRef = useRef<HTMLAnchorElement>(null)
+  const socialsRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => {
+    if (!shouldAnimate || !heroRef.current) return
+
     const ctx = gsap.context(() => {
-      // Always set initial states to prevent flash - now matching CSS classes
-      gsap.set([nameRef.current, contentRef.current, socialRef.current], {
+      gsap.set([taglineRef.current, subtitleRef.current, ctasRef.current, emailRef.current, socialsRef.current, scrollRef.current], {
         opacity: 0,
-        x: -48, // -translate-x-12 = -48px
+        x: -16,
+      })
+      gsap.set(nameRef.current, { opacity: 0, y: 24, scale: 0.96 })
+      gsap.set(cubeRef.current, { opacity: 0 })
+      gsap.set(expandedRef.current, { opacity: 0, visibility: "hidden" })
+
+      const tl = gsap.timeline({ delay: 0.05 })
+
+      tl.to(nameRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        ease: "power3.out",
       })
 
-      gsap.set(".hero-geometry", {
-        opacity: 0,
-        scale: 0.8,
-        rotation: 0,
-      })
-
-      // Only animate if shouldAnimate is true
-      if (shouldAnimate) {
-        const tl = gsap.timeline({ delay: 0.3 })
-
-        // Animate sidebar line first
-        tl.to(".hero-sidebar-line", {
-          opacity: 1,
-          height: "10rem", // h-40 = 10rem
-          duration: 0.6,
-          ease: "power2.out",
-        })
-
-        tl.to(".hero-geometry", {
-          opacity: 1,
-          scale: 1,
-          rotation: (index) => index * 15,
-          duration: 0.8,
-          stagger: 0.08,
-          ease: "back.out(1.7)",
-        }, "-=0.3")
-
-        tl.to(
-          nameRef.current,
-          {
-            opacity: 1,
-            x: 0,
-            duration: 0.8,
-            ease: "power3.out",
-          },
-          "-=0.5",
-        )
-
-        tl.to(
-          contentRef.current,
-          {
-            opacity: 1,
-            x: 0,
-            duration: 0.6,
-            ease: "power2.out",
-          },
-          "-=0.4",
-        )
-
-        tl.to(
-          socialRef.current,
-          {
-            opacity: 1,
-            x: 0,
-            duration: 0.5,
-            ease: "power2.out",
-          },
-          "-=0.3",
-        )
-
-        gsap.to(".hero-float", {
-          y: -10,
-          duration: 2,
-          ease: "power1.inOut",
-          yoyo: true,
-          repeat: -1,
-          stagger: 0.2,
-        })
-
-        gsap.to(".hero-rotate", {
-          rotation: "+=360",
-          duration: 20,
-          ease: "none",
-          repeat: -1,
-        })
+      if (isMobile) {
+        tl.to(subtitleRef.current, { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, "-=0.2")
+          } else {
+        tl.add(() => {
+          gsap.set(subtitleRef.current, { opacity: 1, x: 0 })
+          const cubeTl = gsap.timeline({
+            delay: 0.6,
+            onComplete: () => {
+              gsap.to(cubeRef.current, { opacity: 0, duration: 0.2 })
+              gsap.set(expandedRef.current, { visibility: "visible" })
+              gsap.fromTo(
+                expandedRef.current,
+                { opacity: 0, y: 8 },
+                { opacity: 1, y: 0, duration: 0.6, delay: 0.2, ease: "power2.out" }
+              )
+            },
+          })
+          gsap.fromTo(cubeRef.current, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" })
+          cubeTl.to(cubeRotatorRef.current, { rotateY: -120, duration: 1.4, ease: "power2.inOut" })
+          cubeTl.to(cubeRotatorRef.current, { rotateY: -240, duration: 1.4, ease: "power2.inOut" })
+        }, "-=0.2")
       }
+
+      tl.to(taglineRef.current, { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, isMobile ? "+=0.3" : "+=4.2")
+      tl.to(ctasRef.current, { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, "-=0.3")
+      tl.to(emailRef.current, { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, "-=0.3")
+      tl.to(socialsRef.current, { opacity: 1, x: 0, duration: 0.4, stagger: 0.05, ease: "power2.out" }, "-=0.2")
+      tl.to(scrollRef.current, { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, "-=0.2")
     }, heroRef)
 
     return () => ctx.revert()
-  }, [shouldAnimate])
+  }, [shouldAnimate, isMobile])
 
   return (
-    <div ref={heroRef} className="relative h-full bg-[var(--portfolio-beige)] overflow-hidden">
-      <div ref={geometryRef} className="absolute inset-0 pointer-events-none">
-        <div className="hero-geometry hero-float absolute top-16 right-32 w-40 h-40 rounded-full bg-[var(--portfolio-gold)] opacity-8" />
-        <div className="hero-geometry hero-float absolute top-32 right-20 w-24 h-24 rounded-full bg-[var(--portfolio-gold)] opacity-12" />
-        <div className="hero-geometry hero-float absolute bottom-32 right-24 w-32 h-32 rounded-full bg-[var(--portfolio-brown)] opacity-6" />
-        <div className="hero-geometry hero-float absolute top-1/3 right-1/4 w-20 h-20 rounded-full bg-[var(--portfolio-gold)] opacity-10" />
-        <div className="hero-geometry hero-float absolute bottom-1/4 right-1/3 w-16 h-16 rounded-full bg-[var(--portfolio-brown)] opacity-8" />
+    <div ref={heroRef} className={`relative min-h-screen bg-[var(--charcoal)] flex items-center justify-center ${isMobile ? "px-4 py-16" : "px-8"}`}>
+      <div className={`w-full max-w-4xl ${isMobile ? "text-center" : ""}`}>
+        <div className="mb-8">
+          <p
+            ref={taglineRef}
+            className="text-[10px] uppercase tracking-[0.3em] text-[var(--goldenrod)]/80 mb-6 opacity-0"
+          >
+            Building software that matters
+          </p>
+          <h1
+            ref={nameRef}
+            className="font-serif font-bold leading-[0.95] text-white tracking-tighter"
+            style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}
+          >
+            Hi, I&apos;m Matthew Shi
+          </h1>
+        </div>
 
-        <div className="hero-geometry hero-rotate absolute top-1/4 right-1/3 w-24 h-24 bg-[var(--portfolio-gold)] opacity-12" />
-        <div className="hero-geometry hero-rotate absolute top-1/2 right-1/5 w-18 h-18 bg-[var(--portfolio-brown)] opacity-10" />
-        <div className="hero-geometry hero-rotate absolute bottom-1/3 right-2/5 w-14 h-14 bg-[var(--portfolio-gold)] opacity-8" />
-        <div className="hero-geometry hero-rotate absolute top-3/4 right-1/2 w-20 h-20 bg-[var(--portfolio-brown)] opacity-6" />
+        <div ref={subtitleRef} className={`space-y-8 opacity-0 ${isMobile ? "flex flex-col items-center" : ""}`}>
+          {isMobile ? (
+            <p className="text-sm tracking-widest text-gray-400 max-w-[50vw]">
+              Sophomore at Texas A&M · ML, Optimization, & Anomaly detection
+            </p>
+          ) : (
+            <div className="flex items-center gap-1 flex-nowrap whitespace-nowrap">
+              <span className="text-sm tracking-widest text-gray-400 leading-[1.5] shrink-0">Sophomore at Texas A&M · </span>
+              <span className="relative inline-flex items-center text-sm tracking-widest text-gray-400 min-w-[22ch] h-[1.5em] leading-[1.5] overflow-hidden shrink-0" style={{ perspective: "600px" }}>
+                <span
+                  ref={cubeRef}
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{ transformStyle: "preserve-3d", perspective: "600px" }}
+                >
+                  <span
+                    ref={cubeRotatorRef}
+                    className="relative w-full h-full flex items-center justify-center"
+                    style={{
+                      transformStyle: "preserve-3d",
+                      transformOrigin: "center center",
+                    }}
+                  >
+                    {CUBE_WORDS.map((word, i) => (
+                      <span
+                        key={word}
+                        className="absolute text-sm tracking-widest text-gray-400 whitespace-nowrap"
+                        style={{
+                          transform: `translate(-50%, -50%) rotateY(${i * 120}deg) translateZ(6ch)`,
+                          backfaceVisibility: "hidden",
+                          left: "50%",
+                          top: "50%",
+                        }}
+                      >
+                        {word}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+                <span
+                  ref={expandedRef}
+                  className="absolute inset-0 flex items-center text-sm tracking-widest text-gray-400 leading-[1.5] whitespace-nowrap"
+                  style={{ visibility: "hidden" }}
+                >
+                  Software, ML, & Energy
+                </span>
+              </span>
+            </div>
+          )}
 
-        <div className="hero-geometry hero-float absolute top-1/5 right-1/6 w-6 h-6 bg-[var(--portfolio-gold)] opacity-15 rotate-45" />
-        <div className="hero-geometry hero-float absolute bottom-1/5 right-1/4 w-8 h-8 bg-[var(--portfolio-brown)] opacity-12 rotate-12" />
-      </div>
-
-      <div className="relative h-full flex items-center">
-        <div className="hero-sidebar-line absolute left-28 top-1/2 -translate-y-1/2 w-1 h-40 bg-gradient-to-b from-[var(--portfolio-gold)] via-amber-500 to-orange-400 shadow-lg transform-gpu" />
-
-        <div className="pl-40 max-w-4xl">
-          <div ref={nameRef} className="hero-section-content mb-8 relative opacity-0 -translate-x-12">
-            <h1 className="font-serif font-bold leading-none">
-              <div
-                className="text-8xl lg:text-9xl bg-gradient-to-r from-[var(--portfolio-brown)] via-amber-700 to-[var(--portfolio-gold)] bg-clip-text text-transparent transform -rotate-1 origin-left mb-2 hover:scale-105 transition-transform duration-300 cursor-default"
-                style={{ textShadow: "0 4px 8px rgba(139, 91, 41, 0.1)" }}
-              >
-                MATTHEW
-              </div>
-              <div
-                className="text-8xl lg:text-9xl bg-gradient-to-r from-[var(--portfolio-brown)] via-amber-700 to-[var(--portfolio-gold)] bg-clip-text text-transparent transform rotate-1 -mt-6 hover:scale-105 transition-transform duration-300 cursor-default"
-                style={{ textShadow: "0 4px 8px rgba(139, 91, 41, 0.1)" }}
-              >
-                SHI
-              </div>
-            </h1>
+          <div ref={ctasRef} className="flex flex-wrap gap-4 opacity-0">
+            <a
+              href="#journey-anchor"
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById("journey-anchor")?.scrollIntoView({ behavior: "smooth" })
+              }}
+              className="px-6 py-3 bg-[var(--goldenrod)] text-[var(--charcoal)] font-semibold text-sm tracking-widest uppercase rounded-sm hover:opacity-90 transition-opacity"
+            >
+              View Journey
+            </a>
+            <a
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
+              }}
+              className="px-6 py-3 border border-white/20 text-white/90 font-medium text-sm tracking-widest uppercase rounded-sm hover:border-[var(--goldenrod)]/50 hover:text-[var(--goldenrod)] transition-colors"
+            >
+              Get In Touch
+            </a>
           </div>
 
-          <div ref={contentRef} className="hero-section-content opacity-0 -translate-x-12">
-            <div className="mb-8">
-              <p className="text-2xl text-[var(--portfolio-brown)] font-semibold tracking-wide">
-                Software Engineer & ECE Student @ Texas A&M
-              </p>
-            </div>
+          <a
+            ref={emailRef}
+            href="mailto:matthewtershi@tamu.edu"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[var(--goldenrod)] transition-colors tracking-wide opacity-0"
+          >
+            matthewtershi@tamu.edu
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
 
-            <div className="mb-10 max-w-2xl">
-              <p className="text-lg text-gray-700 leading-relaxed font-medium">
-                Hey I&apos;m Matthew, a sophomore at Texas A&M interested in software, machine learning, and energy. Feel free to contact me at matthewtershi@tamu.edu!
-              </p>
-            </div>
-          </div>
-
-          <div ref={socialRef} className="hero-section-content flex space-x-5 opacity-0 -translate-x-12">
+          <div ref={socialsRef} className={`flex gap-4 pt-4 opacity-0 ${isMobile ? "justify-center" : ""}`}>
             {[
-              { icon: Mail, href: "mailto:matthewtershi@gmail.com", label: "Email", color: "bg-amber-500/80 hover:bg-amber-500" },
-              { icon: Linkedin, href: "https://www.linkedin.com/in/matthew-shi-a2376b239/", label: "LinkedIn", color: "bg-blue-600/80 hover:bg-blue-600" },
-              {
-                icon: Github,
-                href: "https://github.com/Matthewtershi",
-                label: "GitHub",
-                color: "bg-gray-700/80 hover:bg-gray-700",
-              },
-              {
-                icon: Instagram,
-                href: "https://www.instagram.com/matthew.sih8/",
-                label: "Instagram",
-                color: "bg-gradient-to-br from-pink-500/80 to-purple-500/80 hover:from-pink-500 hover:to-purple-500",
-              },
-            ].map(({ icon: Icon, href, label, color }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`social-icon w-12 h-12 rounded-full ${color} flex items-center justify-center text-white transition-all duration-300 group shadow-lg hover:shadow-xl`}
-                aria-label={label}
-                onMouseEnter={(e) => {
-                  gsap.to(e.currentTarget, {
-                    scale: 1.15,
-                    rotation: 5,
-                    duration: 0.3,
-                    ease: "back.out(1.7)",
-                  })
-                }}
-                onMouseLeave={(e) => {
-                  gsap.to(e.currentTarget, {
-                    scale: 1,
-                    rotation: 0,
-                    duration: 0.3,
-                    ease: "back.out(1.7)",
-                  })
-                }}
-              >
-                <Icon size={20} className="group-hover:scale-110 transition-transform duration-300" />
-              </a>
+              { icon: Mail, href: "mailto:matthewtershi@gmail.com", label: "Email" },
+              { icon: Linkedin, href: "https://www.linkedin.com/in/matthew-shi-a2376b239/", label: "LinkedIn" },
+              { icon: Github, href: "https://github.com/Matthewtershi", label: "GitHub" },
+              { icon: Instagram, href: "https://www.instagram.com/matthew.sih8/", label: "Instagram" },
+            ].map(({ icon: Icon, href, label }) => (
+              <MagneticButton key={label} maxPull={10}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full border border-white/15 flex items-center justify-center text-gray-400 hover:text-[var(--goldenrod)] hover:border-[var(--goldenrod)]/30 transition-colors"
+                  aria-label={label}
+                >
+                  <Icon size={18} />
+                </a>
+              </MagneticButton>
             ))}
           </div>
-
-          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-32 h-px bg-gradient-to-r from-transparent via-[var(--portfolio-gold)] to-transparent opacity-50" />
         </div>
+
+        <a
+          ref={scrollRef}
+          href={isMobile ? "#section-1" : "#journey-anchor"}
+          onClick={(e) => {
+            e.preventDefault()
+            const target = isMobile ? "section-1" : "journey-anchor"
+            document.getElementById(target)?.scrollIntoView({ behavior: "smooth" })
+          }}
+          aria-label="Scroll"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-[10px] uppercase tracking-[0.3em] text-white/40 hover:text-[var(--goldenrod)]/60 transition-colors opacity-0"
+        >
+          Scroll
+          <ChevronDown className="w-5 h-5" />
+        </a>
       </div>
     </div>
   )

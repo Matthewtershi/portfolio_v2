@@ -1,7 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter, Oswald } from "next/font/google"
-import dynamic from "next/dynamic"
+import { Inter, Cormorant_Garamond } from "next/font/google"
 import "./globals.css"
 
 const inter = Inter({
@@ -10,10 +9,11 @@ const inter = Inter({
   variable: "--font-inter",
 })
 
-const oswald = Oswald({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
   display: "swap",
-  variable: "--font-oswald",
+  variable: "--font-cormorant",
 })
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${oswald.variable} antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${cormorant.variable} antialiased`} suppressHydrationWarning>
       <body suppressHydrationWarning>{children}</body>
     </html>
   )

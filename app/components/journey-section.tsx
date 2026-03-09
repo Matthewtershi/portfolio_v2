@@ -1,288 +1,161 @@
 "use client"
 
-import { Brain, Code, Server, Cloud, Network, Leaf, Target, Trophy, GraduationCap } from "lucide-react"
 import { useEffect, useRef } from "react"
-import { gsap } from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { motion, useScroll, useTransform } from "framer-motion"
+import { experiences } from "@/app/data/journey-data"
 
-interface Experience {
-  year: string
-  category: string
-  title: string
-  description: string
-  tools: string[]
-  icon: React.ComponentType<{ className?: string }>
-  position: "top" | "bottom"
-}
+const PANEL_COUNT = experiences.length
 
 interface JourneySectionProps {
   shouldAnimate?: boolean
+  isMobile?: boolean
 }
 
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger)
-}
-
-const experiences: Experience[] = [
-  {
-    year: "2025",
-    category: "Internship",
-    title: "Energy System Laboratory",
-    description: "Designed preprocessing pipelines for ML and OCR models in HVAC fault detection",
-    tools: ["ASP.NET", "Azure Machine Learning", "AWS", "Blazor"],
-    icon: Brain,
-    position: "top",
-  },
-  {
-    year: "2024",
-    category: "Research",
-    title: "Climate Hydrology Lab",
-    description: "Designed models and dashboards for CDR and ocean alkalinization at scale",
-    tools: ["Juypter", "Django", "PostgreSQL", "Docker"],
-    icon: Leaf,
-    position: "bottom",
-  },
-  {
-    year: "2024",
-    category: "Leadership",
-    title: "Tidal TAMU Activities Director",
-    description: "Led the organization through hackathons and workshops for 400+ students in collaboration with AWS, Jane Street, and many others",
-    tools: ["TypeScript", "MongoDB", "Node.js"],
-    icon: Code,
-    position: "top",
-  },
-  {
-    year: "2024",
-    category: "Competition",
-    title: "HowdyHack",
-    description: "Built a wildfire prediction app that reached 86% accuracy and placed Top 4 at HowdyHack 2024",
-    tools: ["Next.js", "Python", "TensorFlow", "Flask"],
-    icon: Trophy,
-    position: "bottom",
-  },
-  {
-    year: "2024",
-    category: "Project",
-    title: "Baseball Swing Analysis Model",
-    description: "Developed a LSTM model to classify swings, diagnose swing faults, and provide feedback to players",
-    tools: ["TensorFlow", "OpenCV", "Mediapipe"],
-    icon: Target,
-    position: "top",
-  },
-  {
-    year: "2024",
-    category: "Education",
-    title: "Enrolled in CE @ TAMU",
-    description: "Began post-secondary education @ TAMU - ECE Major Math Minor",
-    tools: ["C++", "Python", "MATLAB"],
-    icon: GraduationCap,
-    position: "bottom",
-  },
-]
-
-const skills = [
-  { name: "Machine Learning", icon: Brain },
-  { name: "Full Stack", icon: Code },
-  { name: "DevOps", icon: Server },
-  { name: "Cloud Computing", icon: Cloud },
-  { name: "Distributed Systems", icon: Network },
-  { name: "Sustainability", icon: Leaf },
-]
-
-export default function JourneySection({ shouldAnimate = false }: JourneySectionProps) {
+export default function JourneySection({ shouldAnimate = false, isMobile = false }: JourneySectionProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
-  const headerRef = useRef<HTMLDivElement>(null)
-  const timelineRef = useRef<HTMLDivElement>(null)
+  const horizontalRef = useRef<HTMLDivElement>(null)
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  })
+
+  const horizontalScroll = useTransform(
+    scrollYProgress,
+    [0, 0.92, 1],
+    [0, (PANEL_COUNT - 1) * 100, (PANEL_COUNT - 1) * 100]
+  )
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Always set initial states to prevent flash
-      gsap.set(".journey-header", { opacity: 0, y: 30 })
-      gsap.set(".skill-pill", { opacity: 0, y: 20, scale: 0.8 })
-      gsap.set(".timeline-card", { opacity: 0, y: 50, scale: 0.9 })
-      gsap.set(".timeline-line", { clipPath: "inset(0 100% 0 0)" })
+    if (isMobile || !horizontalRef.current) return
 
-      // Only animate if shouldAnimate is true
-      if (shouldAnimate) {
-        const tl = gsap.timeline({ delay: 0.1 })
-
-        tl.to(".journey-header", {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          ease: "power2.out",
-        })
-
-        tl.to(
-          ".skill-pill",
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.4,
-            stagger: 0.08,
-            ease: "back.out(1.7)",
-          },
-          "-=0.2",
-        )
-
-        // Animate timeline line with a drawing effect using clip-path
-        tl.to(
-          ".timeline-line",
-          {
-            clipPath: "inset(0 0% 0 0)",
-            duration: 1.2,
-            ease: "power2.out",
-          },
-          "-=0.1",
-        )
-
-        // Animate timeline cards with a staggered reveal effect
-        tl.to(
-          ".timeline-card",
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.6,
-            stagger: 0.15,
-            ease: "back.out(1.4)",
-          },
-          "-=0.8", // Start cards animation while line is still drawing
-        )
+    const unsubscribe = horizontalScroll.on("change", (v) => {
+      if (horizontalRef.current) {
+        const scrollWidth = horizontalRef.current.scrollWidth - horizontalRef.current.clientWidth
+        horizontalRef.current.scrollLeft = (v / 100) * scrollWidth
       }
-    }, sectionRef)
+    })
 
-    return () => ctx.revert()
-  }, [shouldAnimate])
+    return () => unsubscribe()
+  }, [horizontalScroll, isMobile])
 
-  return (
-    <div ref={sectionRef} className="h-full bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 flex flex-col">
-      <div ref={headerRef} className="px-16 py-16">
-        <div className="journey-header">
-          <h2 className="text-4xl lg:text-5xl font-serif font-bold text-[var(--portfolio-brown)] mb-4">My Journey</h2>
-          <p className="text-lg my-2 text-gray-600 font-medium"> Here is my story so far. If you want to see more, check out my work on <a href="https://github.com/Matthewtershi" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800"> Github </a> where I share everything I&apos;ve worked on!  </p>
-        </div>
-
-        <div className="flex flex-wrap gap-4">
-          {skills.map((skill) => {
-            const IconComponent = skill.icon
+  if (isMobile) {
+    return (
+      <div ref={sectionRef} className="min-h-screen py-24 px-6 bg-[var(--charcoal)]">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+          className="font-serif font-bold text-[var(--goldenrod)] mb-12 text-center"
+          style={{ fontSize: "clamp(2.5rem, 8vw, 4rem)" }}
+        >
+          MY JOURNEY
+        </motion.h2>
+        <div className="space-y-8 max-w-xl mx-auto">
+          {experiences.map((exp, i) => {
+            const Icon = exp.icon
             return (
-              <span
-                key={skill.name}
-                className="skill-pill px-5 py-3 bg-white rounded-full text-sm font-semibold text-[var(--portfolio-brown)] shadow-md border border-amber-200 hover:shadow-lg transition-all duration-300 flex items-center space-x-2 cursor-default"
-                onMouseEnter={(e) => {
-                  gsap.to(e.currentTarget, {
-                    scale: 1.05,
-                    y: -2,
-                    duration: 0.3,
-                    ease: "back.out(1.7)",
-                  })
-                }}
-                onMouseLeave={(e) => {
-                  gsap.to(e.currentTarget, {
-                    scale: 1,
-                    y: 0,
-                    duration: 0.3,
-                    ease: "back.out(1.7)",
-                  })
-                }}
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="glass rounded-3xl p-8 border border-white/10"
               >
-                <IconComponent className="w-5 h-5" />
-                <span>{skill.name}</span>
-              </span>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-[10px] uppercase tracking-widest text-gray-500">{exp.category}</span>
+                  <span className="px-3 py-1 bg-[var(--goldenrod)]/20 text-[var(--goldenrod)] text-sm font-semibold rounded-full">
+                    {exp.year}
+                  </span>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-[var(--goldenrod)]/10 flex items-center justify-center mb-4">
+                  <Icon className="w-6 h-6 text-[var(--goldenrod)]" />
+                </div>
+                <h3 className="font-serif font-bold text-white text-xl mb-2">{exp.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">{exp.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {exp.tools.map((t, j) => (
+                    <span key={j} className="px-2 py-1 text-[10px] uppercase text-gray-500 border border-white/10 rounded">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
             )
           })}
         </div>
       </div>
+    )
+  }
 
-      <div className="flex-1 relative px-8">
+  const VH_PER_PANEL = 140
+
+  return (
+    <div
+      ref={sectionRef}
+      className="relative"
+      style={{ height: `${PANEL_COUNT * VH_PER_PANEL}vh` }}
+    >
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col py-[8vh]">
         <div
-          className="timeline-scroll-area h-full overflow-x-auto overflow-y-hidden scroll-smooth"
-          style={{ scrollbarWidth: "thin" }}
+          ref={horizontalRef}
+          className="horizontal-scroll-container flex-1 min-h-0 w-full flex overflow-x-auto overflow-y-hidden snap-x snap-proximity scroll-smooth"
         >
-          <div
-            ref={timelineRef}
-            className="relative h-full py-20"
-            style={{ width: `${experiences.length * 400 + 200}px` }}
-          >
-             <div className="timeline-line absolute top-1/2 left-0 right-0 h-2 bg-gradient-to-r from-[var(--portfolio-gold)] via-amber-400 to-orange-400 transform -translate-y-1/2 rounded-full shadow-sm">
-              <div className="h-full w-full bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 opacity-20 animate-pulse" />
-            </div>
-             
-            <div className="relative flex items-center h-full">
-              {experiences.map((exp, index) => {
-                const Icon = exp.icon
-                const leftPosition = 100 + index * 400 // 400px spacing between cards
-
-                return (
-                  <div key={index} className="absolute" style={{ left: `${leftPosition}px` }}>
-
-                    <div
-                      className={`timeline-card w-80 bg-white rounded-xl shadow-xl p-6 border border-amber-100 transition-all duration-300 cursor-pointer ${
-                        exp.position === "top" ? "mb-40 transform -translate-y-8" : "mt-32 transform translate-y-8"
-                      }`}
-                      onMouseEnter={(e) => {
-                        gsap.to(e.currentTarget, {
-                          y: exp.position === "top" ? -40 : 40,
-                          scale: 1.02,
-                          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                          duration: 0.4,
-                          ease: "power2.out",
-                        })
-                      }}
-                      onMouseLeave={(e) => {
-                        gsap.to(e.currentTarget, {
-                          y: exp.position === "top" ? -32 : 32,
-                          scale: 1,
-                          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                          duration: 0.4,
-                          ease: "power2.out",
-                        })
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="px-4 py-2 bg-gradient-to-r from-[var(--portfolio-gold)] to-amber-400 text-white text-sm font-bold rounded-full shadow-sm">
-                          {exp.year}
-                        </div>
-
-                        <div className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full uppercase tracking-wide">
-                          {exp.category}
-                        </div>
-                      </div>
-
-                      <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mb-5 shadow-inner">
-                        <Icon className="w-8 h-8 text-[var(--portfolio-brown)]" />
-                      </div>
-
-                      <h3 className="text-xl font-bold text-[var(--portfolio-brown)] mb-3 leading-tight">
-                        {exp.title}
-                      </h3>
-                      <p className="text-gray-600 leading-relaxed text-sm mb-4">{exp.description}</p>
-
-                      <div className="mb-4">
-                        <h4 className="text-sm font-semibold text-[var(--portfolio-brown)] mb-2 uppercase tracking-wide">
-                          Tools & Technologies
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {exp.tools.map((tool, toolIndex) => (
-                            <span
-                              key={toolIndex}
-                              className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded-full border border-amber-200"
-                            >
-                              {tool}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--portfolio-gold)] to-orange-400 rounded-b-xl" />
+          {experiences.map((exp, i) => {
+            const Icon = exp.icon
+            const isTopRight = exp.position === "top"
+            const bgUrl = exp.imageUrl ?? "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1920&q=80"
+            return (
+              <div
+                key={i}
+                className="min-w-[100vw] h-full flex-shrink-0 snap-center relative flex items-center justify-center px-4"
+              >
+                <div className="absolute top-[8vh] right-8 bottom-[8vh] left-8 rounded-3xl overflow-hidden glass border border-white/10">
+                  <div
+                    className="absolute inset-0 bg-cover bg-center grayscale hover:grayscale-0 transition-[filter] duration-700"
+                    style={{ backgroundImage: `url(${bgUrl})` }}
+                  />
+                  <div className="absolute inset-0 bg-[var(--charcoal)]/60" />
+                </div>
+                <div
+                  className={`absolute ${isTopRight ? "top-[calc(8vh+1.5rem)] right-12" : "bottom-[calc(8vh+1.5rem)] left-12"} w-full max-w-md z-10`}
+                >
+                  <div className="glass rounded-3xl p-8 border border-white/10 hover:shadow-[var(--glow-gold)] transition-shadow duration-500">
+                    <span className="text-[10px] uppercase tracking-widest text-gray-500">{exp.category}</span>
+                    <div className="flex items-center gap-3 mt-2 mb-4">
+                      <span className="px-3 py-1 bg-[var(--goldenrod)]/20 text-[var(--goldenrod)] text-sm font-semibold rounded-full">
+                        {exp.year}
+                      </span>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-[var(--goldenrod)]/10 flex items-center justify-center mb-4">
+                      <Icon className="w-6 h-6 text-[var(--goldenrod)]" />
+                    </div>
+                    <h3 className="font-serif font-bold text-white text-2xl mb-2">{exp.title}</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed mb-4">{exp.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {exp.tools.map((t, j) => (
+                        <span key={j} className="px-2 py-1 text-[10px] uppercase text-gray-500 border border-white/10 rounded">
+                          {t}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-[10px] uppercase tracking-widest text-[var(--goldenrod)]/60">
+          <span>Scroll</span>
+          <a
+            href="#contact"
+            onClick={(e) => {
+              e.preventDefault()
+              document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
+            }}
+            className="text-[8px] text-[var(--goldenrod)]/40 hover:text-[var(--goldenrod)]/70 transition-colors mt-2"
+          >
+            Continue to contact
+          </a>
         </div>
       </div>
     </div>

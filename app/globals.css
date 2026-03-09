@@ -43,6 +43,16 @@
   --portfolio-gold: #b88a1e;
   --portfolio-beige: #f5f5dc;
   --portfolio-dark: #1c1917;
+
+  /* Glassmorphism tokens */
+  --charcoal: #12100e;
+  --goldenrod: #d4af37;
+  --earth-orange: #c17f59;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 12px;
+  --glow-gold: 0 0 30px rgba(212, 175, 55, 0.2);
+  --ease-quintic: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
@@ -125,7 +135,7 @@
   --color-portfolio-dark: var(--portfolio-dark);
 
   --font-sans: var(--font-inter);
-  --font-serif: var(--font-oswald);
+  --font-serif: var(--font-cormorant);
 }
 
 /* Hero section preload states */
@@ -175,6 +185,18 @@
 
 .timeline-line {
   transition: transform 1.2s ease-out;
+}
+
+.timeline-line-mobile {
+  transform-origin: top center;
+}
+
+/* Glass utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
 }
 
 /* Contact section preload states */

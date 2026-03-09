@@ -1,194 +1,144 @@
 "use client"
 
 import type React from "react"
-import { ArrowLeft, Send } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
-import { gsap } from "gsap"
+import { ArrowLeft, Send, Copy, Check } from "lucide-react"
+import { useState } from "react"
+import { motion } from "framer-motion"
 import GitHubStats from "./github-stats"
+
+const EASE = [0.22, 1, 0.36, 1] as const
 
 interface ContactSectionProps {
   shouldAnimate?: boolean
 }
 
 export default function ContactSection({ shouldAnimate = false }: ContactSectionProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  })
-  const [focusedField, setFocusedField] = useState<string | null>(null)
-  const sectionRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Always set initial states to prevent flash
-      gsap.set(".contact-header", { opacity: 0, y: 30 })
-      gsap.set(".contact-form", { opacity: 0, y: 20 })
-      gsap.set(".contact-stats", { opacity: 0, x: 30 })
-
-      // Only animate if shouldAnimate is true
-      if (shouldAnimate) {
-        const tl = gsap.timeline({ delay: 0.1 })
-
-        tl.to(".contact-header", {
-          opacity: 1,
-          y: 0,
-          duration: 0.5,
-          ease: "power2.out",
-        })
-
-        tl.to(".contact-form", {
-          opacity: 1,
-          y: 0,
-          duration: 0.4,
-          ease: "power2.out",
-        }, "-=0.3")
-
-        tl.to(".contact-stats", {
-          opacity: 1,
-          x: 0,
-          duration: 0.5,
-          ease: "power2.out",
-        }, "-=0.2")
-      }
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [shouldAnimate])
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" })
+  const [copied, setCopied] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
     const subject = encodeURIComponent("Portfolio Contact from " + formData.name)
     const body = encodeURIComponent(
       `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
     )
-    
     window.location.href = `mailto:matthewtershi@gmail.com?subject=${subject}&body=${body}`
-    
     setFormData({ name: "", email: "", message: "" })
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  const scrollToStart = () => {
-    const container = document.querySelector('[ref="containerRef"]') || 
-                     document.querySelector('.flex.h-full.overflow-x-auto') || 
-                     document.querySelector('.flex.h-full.overflow-x-auto.overflow-y-hidden') ||
-                     window
-    if (container && 'scrollTo' in container) {
-      container.scrollTo({ left: 0, behavior: "smooth" })
-    } else {
-      window.scrollTo({ left: 0, behavior: "smooth" })
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText("matthewtershi@gmail.com")
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      const ta = document.createElement("textarea")
+      ta.value = "matthewtershi@gmail.com"
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand("copy")
+      document.body.removeChild(ta)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
   }
 
   return (
-    <div ref={sectionRef} className="h-full bg-[var(--portfolio-dark)] text-white flex items-center justify-center relative overflow-hidden px-4">
-      <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start justify-between gap-8 lg:gap-12 relative z-10">
-        <div className="flex-1 max-w-lg text-center lg:text-left">
-        <div className="contact-header opacity-0 translate-y-8">
-          <p className="text-amber-400 text-sm font-bold tracking-[0.2em] uppercase mb-6 relative inline-block">
-            GET IN TOUCH
-            <span className="absolute -bottom-1 left-0 w-12 h-0.5 bg-amber-400" />
-          </p>
-
-          <h2 className="text-5xl lg:text-6xl font-serif font-bold mb-16 text-white">
-            CONTACT<span className="text-amber-400">.</span>
-          </h2>
-        </div>
-
-        <form onSubmit={handleSubmit} className="contact-form space-y-10 opacity-0 translate-y-5">
-          <div className="relative">
-            <input
-              type="text"
-              name="name"
-              placeholder="Your Name"
-              value={formData.name}
-              onChange={handleInputChange}
-              onFocus={() => setFocusedField("name")}
-              onBlur={() => setFocusedField(null)}
-              className="w-full bg-transparent border-0 border-b-2 border-gray-600 focus:border-amber-400 outline-none py-4 text-white placeholder-gray-400 transition-all duration-300 text-lg"
-              required
-            />
-            <div
-              className={`absolute bottom-0 left-0 h-0.5 bg-amber-400 transition-all duration-300 ${
-                focusedField === "name" ? "w-full" : "w-0"
-              }`}
-            />
+    <div className="min-h-screen bg-[var(--charcoal)] flex items-center justify-center px-6 py-24">
+      <div className="w-full max-w-5xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, ease: EASE }}
+            >
+              <p className="text-[10px] uppercase tracking-[0.3em] text-[var(--goldenrod)] mb-4">Get in touch</p>
+              <h2 className="font-serif font-bold text-white text-4xl lg:text-5xl mb-8">Contact</h2>
+              <p className="text-sm tracking-widest text-gray-400 mb-8 max-w-md">
+                Have a project in mind? Drop a line.
+              </p>
+              <button
+                onClick={copyEmail}
+                className="glass px-6 py-3 rounded-sm border border-white/10 flex items-center gap-3 text-gray-300 hover:text-[var(--goldenrod)] hover:border-[var(--goldenrod)]/30 transition-colors"
+              >
+                {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                <span className="text-sm">{copied ? "Copied!" : "matthewtershi@gmail.com"}</span>
+              </button>
+            </motion.div>
           </div>
 
-          <div className="relative">
-            <input
-              type="email"
-              name="email"
-              placeholder="Your Email"
-              value={formData.email}
-              onChange={handleInputChange}
-              onFocus={() => setFocusedField("email")}
-              onBlur={() => setFocusedField(null)}
-              className="w-full bg-transparent border-0 border-b-2 border-gray-600 focus:border-amber-400 outline-none py-4 text-white placeholder-gray-400 transition-all duration-300 text-lg"
-              required
-            />
-            <div
-              className={`absolute bottom-0 left-0 h-0.5 bg-amber-400 transition-all duration-300 ${
-                focusedField === "email" ? "w-full" : "w-0"
-              }`}
-            />
-          </div>
-
-          <div className="relative">
-            <textarea
-              name="message"
-              placeholder="Your Message"
-              rows={4}
-              value={formData.message}
-              onChange={handleInputChange}
-              onFocus={() => setFocusedField("message")}
-              onBlur={() => setFocusedField(null)}
-              className="w-full bg-transparent border-0 border-b-2 border-gray-600 focus:border-amber-400 outline-none py-4 text-white placeholder-gray-400 resize-none transition-all duration-300 text-lg"
-              required
-            />
-            <div
-              className={`absolute bottom-0 left-0 h-0.5 bg-amber-400 transition-all duration-300 ${
-                focusedField === "message" ? "w-full" : "w-0"
-              }`}
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="bg-gradient-to-r from-amber-400 to-amber-500 text-black px-10 py-4 rounded-lg font-bold hover:from-amber-300 hover:to-amber-400 transition-all duration-300 flex items-center space-x-3 hover:scale-105 hover:shadow-lg group mx-auto lg:mx-0"
+          <motion.form
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, y: 20 }}
+            animate={shouldAnimate ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
+            className="space-y-6"
           >
-            <span>Send Message</span>
-            <Send size={18} className="group-hover:translate-x-1 transition-transform duration-300" />
-          </button>
-        </form>
-      </div>
-
-      <div className="flex-1 flex justify-center lg:justify-end min-w-0">
-        <div className="contact-stats opacity-0 translate-x-8 w-full max-w-2xl">
-          <GitHubStats />
+            <div>
+              <input
+                type="text"
+                name="name"
+                placeholder="Name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full bg-transparent border-b border-white/20 py-4 text-white placeholder-gray-500 focus:border-[var(--goldenrod)] outline-none transition-colors text-sm tracking-wide"
+                required
+              />
+            </div>
+            <div>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full bg-transparent border-b border-white/20 py-4 text-white placeholder-gray-500 focus:border-[var(--goldenrod)] outline-none transition-colors text-sm tracking-wide"
+                required
+              />
+            </div>
+            <div>
+              <textarea
+                name="message"
+                placeholder="Message"
+                rows={4}
+                value={formData.message}
+                onChange={handleInputChange}
+                className="w-full bg-transparent border-b border-white/20 py-4 text-white placeholder-gray-500 focus:border-[var(--goldenrod)] outline-none resize-none transition-colors text-sm tracking-wide"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-8 py-3 bg-[var(--goldenrod)] text-[var(--charcoal)] font-semibold text-sm tracking-widest uppercase rounded-sm hover:opacity-90 transition-opacity flex items-center gap-2"
+            >
+              Send <Send className="w-4 h-4" />
+            </button>
+          </motion.form>
         </div>
-      </div>
-    </div>
 
-      <button
-        onClick={scrollToStart}
-        className="absolute bottom-8 left-8 flex items-center space-x-3 text-amber-400 hover:text-amber-300 transition-all duration-300 group z-20"
-      >
-        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform duration-300" />
-        <span className="font-medium">Back to Start</span>
-      </button>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={shouldAnimate ? { opacity: 1 } : {}}
+          transition={{ delay: 0.3 }}
+          className="mt-16 glass rounded-2xl p-6 border border-white/10"
+        >
+          <GitHubStats />
+        </motion.div>
 
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 border border-amber-400 rotate-45" />
-        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 border border-amber-400 rotate-12" />
+        <motion.button
+          onClick={() => document.getElementById("section-0")?.scrollIntoView({ behavior: "smooth" })}
+          initial={{ opacity: 0 }}
+          animate={shouldAnimate ? { opacity: 1 } : {}}
+          transition={{ delay: 0.4 }}
+          className="mt-16 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-gray-500 hover:text-[var(--goldenrod)] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to start
+        </motion.button>
       </div>
     </div>
   )
