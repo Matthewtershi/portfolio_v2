@@ -167,7 +167,6 @@ export default function ScrollRig({ isMobile = false }: ScrollRigProps) {
         // is solid but the last sixth is left clear for the game.
         ? "linear-gradient(to bottom, transparent 8%, rgba(18,16,14,0.95) 20%, rgba(18,16,14,0.96) 74%, transparent 83%)"
         : "linear-gradient(to bottom, transparent 44%, rgba(18,16,14,0.96) 100%)"
-  const bleed = !!active.image?.fullBleed
   const spots = active.hotspots ?? []
   const openDetail = openSpot >= 0 ? spots[openSpot] : null
 
