@@ -149,7 +149,7 @@ export const PANELS: Panel[] = [
   {
     key: "Say hi",
     eyebrow: "Say hi",
-    heading: "I'd like to hear from you.",
+    heading: "Hit me up with any questions or comments!",
     items: [],
     accent: "#5B8DEF",
     behavior: "image",
@@ -167,7 +167,7 @@ export const PANELS: Panel[] = [
       prompt: "Click anywhere for the part I left out",
       title: "Isagi my glorious king",
       body:
-        "I used to treat wanting things for myself as something I had to justify. Most of the ideas I surrounded myself with during my childhood taught me the same lessons: work extensively with your team, share the credit, and become a good part of something bigger. What stands out to me about Blue Lock is that it questions that assumption. It argues that individuality and teamwork do not have to be opposites: sometimes a team is strongest when each person is willing to develop what makes them uniquely valuable, standing by their identity instead of assimilating with the herd. I wouldn't say Blue Lock changed my life, but it gave me a useful way of thinking about ambition and what I want to do with my life. I am more comfortable admitting that I want to be very good at the things I care about, while also being more deliberate about the opportunities I choose not to pursue. It's a small idea, but one I've found surprisingly useful. I'd want everyone to go watch it (look past the bad animation lmao).",
+        "I used to treat wanting things for myself as something I had to justify. Most of the ideas I surrounded myself with during my childhood taught me the same lessons: work extensively with your team, share the credit, and become a good part of something bigger. What stands out to me about Blue Lock is that it questions that assumption. It argues that individuality and teamwork do not have to be opposites: sometimes a team is strongest when each person is willing to develop what makes them uniquely valuable, standing by their identity instead of assimilating with the herd. I wouldn't say Blue Lock changed my life, but it gave me a useful way of thinking about ambition and what I want to do with my life. I am more comfortable admitting that I want to be very good at the things I care about, while also being more deliberate about the opportunities I choose not to pursue. It's a small idea, but one I've found surprisingly useful. I'd encourage everyone to go watch it (look past the bad animation lmao).",
     },
   },
 ]

@@ -162,11 +162,11 @@ export default function ScrollRig({ isMobile = false }: ScrollRigProps) {
     ? bleedScrim(active)
     : active.image?.fullBleed
       ? "linear-gradient(to bottom, rgba(18,16,14,0.4) 0%, transparent 14%, transparent 48%, rgba(18,16,14,0.9) 60%, var(--charcoal) 68%)"
-      : active.behavior === "dino"
+      : isDino
         // The runner occupies the bottom strip, so the ground under the copy
         // is solid but the last sixth is left clear for the game.
         ? "linear-gradient(to bottom, transparent 8%, rgba(18,16,14,0.95) 20%, rgba(18,16,14,0.96) 74%, transparent 83%)"
-        : "linear-gradient(to bottom, transparent 44%, rgba(18,16,14,0.96) 100%)"
+        : "linear-gradient(to bottom, transparent 54%, rgba(18,16,14,0.96) 100%)"
   const spots = active.hotspots ?? []
   const openDetail = openSpot >= 0 ? spots[openSpot] : null
 
@@ -194,9 +194,13 @@ export default function ScrollRig({ isMobile = false }: ScrollRigProps) {
             // The runner lives in the bottom strip, so the usual bottom
             // vignette would black the game out entirely.
             background:
-              active.behavior === "dino"
+              isDino
                 ? "linear-gradient(to bottom, var(--charcoal) 0%, transparent 24%, transparent 100%)"
-                : "linear-gradient(to bottom, var(--charcoal) 0%, transparent 26%, transparent 84%, rgba(18,16,14,0.95) 100%)",
+                : isMobile
+                  // The formation sits high on a phone, so the top vignette
+                  // has to release much earlier or it erases it.
+                  ? "linear-gradient(to bottom, var(--charcoal) 0%, transparent 11%, transparent 93%, rgba(18,16,14,0.9) 100%)"
+                  : "linear-gradient(to bottom, var(--charcoal) 0%, transparent 26%, transparent 84%, rgba(18,16,14,0.95) 100%)",
           }}
         />
         <div

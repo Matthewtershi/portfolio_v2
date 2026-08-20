@@ -337,6 +337,23 @@ function spriteCells(rows: string[]) {
 const DINO = spriteCells(DINO_SPRITE)
 const CACTUS = spriteCells(CACTUS_SPRITE)
 
+/** The runner as a still, for layouts where the game does not run. A cube of
+    points read as featureless dust at the compact particle count; the sprite
+    silhouette survives it. */
+function fillDinoStill(out: Float32Array, count: number, r: number[]) {
+  const cells = DINO.cells.length / 2
+  const s = 2.9 / DINO.h
+  const ox = -(DINO.w / 2) * s
+  const oy = -(DINO.h / 2) * s
+  for (let i = 0; i < count; i++) {
+    const c = (i % cells) * 2
+    const o = i * STRIDE
+    out[o] = ox + (DINO.cells[c] + (r[i] - 0.5)) * s
+    out[o + 1] = oy + (DINO.cells[c + 1] + (r[i + count] - 0.5)) * s
+    out[o + 2] = (r[i + count * 2] - 0.5) * 0.08
+  }
+}
+
 const GROUND_Y = 2.05
 const DINO_SCALE = 0.022
 const CACTUS_SCALE = 0.038
@@ -428,6 +445,9 @@ export default function Lattice({
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)")
     const count = isMobile ? 11000 : 30000
+    /* Small screens run roughly a third of the particles, so each one has to
+       carry more weight or the formations wash out to a faint smear. */
+    const cloudGain = isMobile ? 2.1 : 1
     const last = PANELS.length - 1
 
     let seed = 11
@@ -442,6 +462,11 @@ export default function Lattice({
     // panels rewrite theirs every frame.
     const states: Float32Array[] = PANELS.map(() => new Float32Array(count * STRIDE))
     PANELS.forEach((p, i) => fillShape(states[i], p.shape, count, r))
+    if (isMobile) {
+      PANELS.forEach((p, i) => {
+        if (p.behavior === "dino") fillDinoStill(states[i], count, r)
+      })
+    }
 
     // The ring carries labels around its rim, which need room. On a phone the
     // full-size ring pushes them off both edges, so it shrinks.
@@ -1232,7 +1257,7 @@ export default function Lattice({
           const depth = scratch.z > 2.4 ? 0 : scratch.z < -1.8 ? 1 : (2.4 - scratch.z) / 4.2
           const lit = i % 23 === 0
 
-          const cloudA = 0.03 + depth * 0.13
+          const cloudA = (0.03 + depth * 0.13) * cloudGain
           const inkA = 0.16 + inks[i] * 0.74
           let alpha = cloudA + (inkA - cloudA) * art + game * 0.34
           if (game > 0) {
