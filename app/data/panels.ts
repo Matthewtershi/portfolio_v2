@@ -84,7 +84,7 @@ export const PANELS: Panel[] = [
     headingCompact: "Where I've worked.",
     items: [
       { lead: "XPerf.ai", text: "GPU observability and autoremediation capabilities.", note: "2026 — 2026" },
-      { lead: "Energy Systems Lab", text: "Two million building sensor readings a day.", note: "2025" },
+      { lead: "Energy Systems Lab", text: "Software for commercial HVAC management.", note: "2025" },
       { lead: "tidalTAMU", text: "Organizing hackathons!", note: "2024 — present" },
     ],
     accent: "#6BA8D6",
