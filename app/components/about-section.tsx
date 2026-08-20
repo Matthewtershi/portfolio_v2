@@ -65,7 +65,7 @@ export default function AboutSection({ shouldAnimate = false, isMobile = false }
 
         {isMobile ? (
           <div className="space-y-12">
-            {PERSONALITY.map(({ label, value, Icon }, i) => (
+            {PERSONALITY.map(({ label, value }, i) => (
               <motion.div
                 key={label}
                 initial={{ opacity: 0, y: 20 }}

@@ -17,9 +17,9 @@ const cormorant = Cormorant_Garamond({
 })
 
 export const metadata: Metadata = {
-  title: "Matthew Shi - Portfolio",
-  description: "Sophomore Software Engineer focused on sustainable energy solutions",
-  generator: "v0.app",
+  title: "Matthew Shi",
+  description:
+    "Computer Engineering student at Texas A&M. I build software that measures things — spacecraft links, GPU fleets, buildings, baseball swings.",
 }
 
 export default function RootLayout({

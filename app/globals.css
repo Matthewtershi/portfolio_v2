@@ -281,9 +281,8 @@ body {
   overflow-x: hidden;
 }
 
-* {
-  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-}
+/* Removed a blanket `*` transition: it fought every scroll-driven
+   animation on the page and made the canvas feel laggy. */
 
 .horizontal-scroll-container {
   scroll-behavior: smooth;
@@ -323,4 +322,134 @@ body {
 .timeline-scroll-area::-webkit-scrollbar-thumb {
   background: var(--portfolio-gold);
   border-radius: 3px;
+}
+/* ------------------------------------------------------------------ *
+ * Panel accents
+ * The charcoal + goldenrod base is unchanged; each section now also
+ * owns a colour, and the lattice tweens between them as you scroll.
+ * ------------------------------------------------------------------ */
+:root {
+  --accent-hello: #d4af37;
+  --accent-work: #6ba8d6;
+  --accent-built: #c17f59;
+  --accent-off: #e0785f;
+  --accent-repeat: #9b8fd1;
+  --accent-hi: #7fbf9e;
+}
+
+@theme inline {
+  --color-accent-hello: var(--accent-hello);
+  --color-accent-work: var(--accent-work);
+  --color-accent-built: var(--accent-built);
+  --color-accent-off: var(--accent-off);
+  --color-accent-repeat: var(--accent-repeat);
+  --color-accent-hi: var(--accent-hi);
+}
+
+/* Panel copy settles in as the object turns into place. */
+.panel-copy {
+  animation: panel-in 0.62s var(--ease-quintic) both;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scroll-dot {
+  animation: scroll-pulse 2s var(--ease-quintic) infinite;
+}
+
+@keyframes scroll-pulse {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(3px); }
+}
+
+/* Keyboard users get a visible target on the section rail. */
+nav[aria-label="Sections"] button:focus-visible {
+  outline: 2px solid var(--goldenrod);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-copy,
+  .scroll-dot {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Audio player sliders
+ * Range inputs cannot be styled through a shared selector across
+ * engines — WebKit and Firefox need their own track/thumb rules, and
+ * combining them in one list invalidates the whole thing.
+ * ------------------------------------------------------------------ */
+.audio-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.audio-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) var(--pct, 0%),
+    rgba(255, 255, 255, 0.14) var(--pct, 0%),
+    rgba(255, 255, 255, 0.14) 100%
+  );
+}
+
+.audio-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(18, 16, 14, 0.85);
+  transition: transform 0.15s ease;
+}
+
+.audio-range:hover::-webkit-slider-thumb {
+  transform: scale(1.25);
+}
+
+.audio-range::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.audio-range::-moz-range-progress {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.audio-range::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(18, 16, 14, 0.85);
+}
+
+.audio-range:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 999px;
 }

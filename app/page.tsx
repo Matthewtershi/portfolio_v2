@@ -1,54 +1,36 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import SmoothScroll from "./components/smooth-scroll"
-import HeroSection from "./components/hero-section"
-import AboutSection from "./components/about-section"
-import JourneySection from "./components/journey-section"
-import ContactSection from "./components/contact-section"
+import ScrollRig from "./components/scroll-rig"
 
-const DESKTOP_BREAKPOINT = 1024
+/* Phones and tablets get the reduced build: no dino game, no idle greeting,
+   and the narrow artwork crop. A 12.9" iPad in landscape is 1366 wide, so
+   width alone is not enough — a coarse pointer means touch. */
+function readCompact() {
+  const w = window.innerWidth
+  const coarse = window.matchMedia("(pointer: coarse)").matches
+  return w < 1024 || (coarse && w < 1400)
+}
 
 export default function Portfolio() {
   const [isMobile, setIsMobile] = useState(false)
-  const [isAboutReady, setIsAboutReady] = useState(false)
-  const [isJourneyReady, setIsJourneyReady] = useState(false)
-  const [isContactReady, setIsContactReady] = useState(false)
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < DESKTOP_BREAKPOINT)
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY
-      const vh = window.innerHeight
-      if (scrollY >= vh * 0.3 && !isAboutReady) setIsAboutReady(true)
-      if (scrollY >= vh * 1.5 && !isJourneyReady) setIsJourneyReady(true)
-      if (scrollY >= vh * 10 && !isContactReady) setIsContactReady(true)
+    const check = () => setIsMobile(readCompact())
+    check()
+    window.addEventListener("resize", check)
+    window.addEventListener("orientationchange", check)
+    return () => {
+      window.removeEventListener("resize", check)
+      window.removeEventListener("orientationchange", check)
     }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [isAboutReady, isJourneyReady, isContactReady])
+  }, [])
 
   return (
     <SmoothScroll disabled={isMobile}>
       <main className="bg-[var(--charcoal)]">
-        <div id="section-0" className="min-h-screen">
-          <HeroSection shouldAnimate isMobile={isMobile} />
-          </div>
-          <div id="section-1" className="min-h-screen">
-            <AboutSection shouldAnimate={isAboutReady} isMobile={isMobile} />
-          </div>
-          <div id="journey-anchor">
-            <JourneySection shouldAnimate={isJourneyReady} isMobile={isMobile} />
-          </div>
-          <div id="contact" className="min-h-screen">
-            <ContactSection shouldAnimate={isContactReady} />
-          </div>
+        <ScrollRig isMobile={isMobile} />
       </main>
     </SmoothScroll>
   )
